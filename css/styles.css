@@ -1,0 +1,290 @@
+/* styles.css
+   Foglio di stile di PopSim. Mobile-first e adattivo: la stessa pagina funziona
+   bene su telefono (una colonna) e su PC (contenuto centrato, piu' ampio).
+   Supporta tema chiaro e scuro secondo le preferenze del sistema. */
+
+:root {
+  --bg: #f4f5f7;
+  --panel: #ffffff;
+  --ink: #1b1e24;
+  --muted: #6b7280;
+  --border: #e2e5ea;
+  --accent: #3b7dd8;
+  --accent-ink: #ffffff;
+  --sandbox-bg: #0f1622;
+  --ok: #2e7d32;
+  --warn: #b26a00;
+  --bad: #c62828;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12151b;
+    --panel: #1b1f27;
+    --ink: #e8eaed;
+    --muted: #9aa2ad;
+    --border: #2b313b;
+    --accent: #5a93e6;
+    --accent-ink: #0b1017;
+    --sandbox-bg: #0a0f18;
+    --ok: #81c784;
+    --warn: #e0a24a;
+    --bad: #ef9a9a;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Il toggle di tema del visualizzatore vince in entrambe le direzioni. */
+:root[data-theme="light"] {
+  --bg: #f4f5f7; --panel: #fff; --ink: #1b1e24; --muted: #6b7280;
+  --border: #e2e5ea; --sandbox-bg: #0f1622;
+}
+:root[data-theme="dark"] {
+  --bg: #12151b; --panel: #1b1f27; --ink: #e8eaed; --muted: #9aa2ad;
+  --border: #2b313b; --sandbox-bg: #0a0f18;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  line-height: 1.45;
+}
+
+.app-header {
+  padding: 14px 16px 6px;
+  text-align: center;
+}
+.app-header h1 { margin: 0; font-size: 1.5rem; letter-spacing: 0.5px; }
+.subtitle { margin: 2px 0 0; color: var(--muted); font-size: 0.9rem; }
+
+/* Contenitore principale: una colonna, larghezza massima per non "sparpagliare"
+   il contenuto sui monitor grandi. */
+.app {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 10px 12px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  padding: 12px;
+}
+.panel h2 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.hint { color: var(--muted); font-size: 0.88rem; margin: 4px 0; }
+.muted { color: var(--muted); }
+
+/* --- Sandbox -------------------------------------------------------------- */
+.sandbox-panel { padding: 8px; }
+.sandbox-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1000 / 600; /* stessa proporzione del "mondo" logico */
+  background: var(--sandbox-bg);
+  border-radius: 10px;
+  overflow: hidden;
+}
+#sandbox { width: 100%; height: 100%; display: block; cursor: pointer; }
+
+.start-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  text-align: center;
+  color: #e8eaed;
+}
+.start-hint-box {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 16px 18px;
+  max-width: 360px;
+}
+.start-hint-box p { margin: 6px 0 0; color: #c8ccd2; font-size: 0.9rem; }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 8px 2px 2px;
+  font-size: 0.82rem;
+  color: var(--ink);
+}
+.lg { display: inline-flex; align-items: center; gap: 6px; }
+.lg-shape { width: 12px; height: 12px; background: var(--muted); display: inline-block; }
+.lg-shape.circle { border-radius: 50%; }
+
+/* --- Barra temporale ------------------------------------------------------ */
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.play-btn {
+  flex: 0 0 auto;
+  min-width: 92px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+.time-slider { flex: 1 1 200px; min-width: 140px; }
+.time-label { flex: 0 0 auto; font-variant-numeric: tabular-nums; font-size: 0.85rem; color: var(--muted); }
+.speed-ctrl {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.speed-ctrl input { width: 96px; }
+
+/* --- Grafico -------------------------------------------------------------- */
+.chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.gene-select { font-size: 0.85rem; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
+.gene-select select {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--ink);
+}
+.chart-wrap {
+  width: 100%;
+  aspect-ratio: 1000 / 300;
+  min-height: 160px;
+}
+#chart { width: 100%; height: 100%; display: block; }
+
+/* --- Hardy-Weinberg ------------------------------------------------------- */
+.hw-head { font-weight: 600; margin-bottom: 6px; }
+.hw-line { margin: 4px 0; font-variant-numeric: tabular-nums; }
+.hw-formula { margin: 4px 0 8px; font-size: 0.9rem; }
+.hw-formula code { background: rgba(127,127,127,0.12); padding: 1px 5px; border-radius: 4px; }
+.badge {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.badge.ok { background: rgba(46,125,50,0.15); color: var(--ok); }
+.badge.warn { background: rgba(178,106,0,0.15); color: var(--warn); }
+.badge.bad { background: rgba(198,40,40,0.15); color: var(--bad); }
+
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+.hw-table th, .hw-table td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); }
+.hw-table th { color: var(--muted); font-weight: 600; }
+.hw-stats { margin: 8px 0 0; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+
+/* --- Manopole (forze) ----------------------------------------------------- */
+.knobs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 560px) {
+  .knobs { grid-template-columns: 1fr 1fr; }
+}
+.knob { display: flex; flex-direction: column; gap: 2px; }
+.knob-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.knob-value { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 700; }
+.knob input[type="range"] { width: 100%; }
+.knob-hint { margin: 0; font-size: 0.78rem; color: var(--muted); }
+
+/* --- Setup ---------------------------------------------------------------- */
+.setup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (min-width: 560px) {
+  .setup-grid { grid-template-columns: repeat(4, 1fr); }
+}
+.setup-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.setup-grid input {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+.setup-grid input:disabled { opacity: 0.55; }
+.setup-actions { margin-top: 10px; display: flex; gap: 8px; }
+button.primary, button.secondary {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+}
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+button.secondary { background: transparent; color: var(--ink); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* --- Pannello informazioni ------------------------------------------------ */
+.info-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.info-shape { font-size: 1.1rem; }
+.info-table td { padding: 3px 8px 3px 0; vertical-align: top; font-size: 0.9rem; }
+.info-table td:first-child { color: var(--muted); white-space: nowrap; }
+.allele-pill {
+  display: inline-block;
+  min-width: 26px;
+  text-align: center;
+  padding: 1px 6px;
+  margin-right: 4px;
+  border-radius: 5px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.35);
+}
+
+.app-footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.8rem;
+  padding: 8px 16px 24px;
+}

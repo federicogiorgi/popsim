@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PopSim — Genetica di Popolazione</title>
+  <meta name="description" content="Simulatore didattico di genetica di popolazione: deriva, mutazione, migrazione, selezione, accoppiamento non casuale ed equilibrio di Hardy-Weinberg." />
+  <!-- Percorsi relativi: il sito vive nel sottopercorso /popsim/. -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>PopSim</h1>
+    <p class="subtitle">Simulatore di genetica di popolazione</p>
+  </header>
+
+  <main class="app">
+
+    <!-- 1) SANDBOX: il mondo, elemento grafico principale e piu' grande. -->
+    <section class="panel sandbox-panel" aria-label="Sandbox">
+      <div class="sandbox-wrap">
+        <canvas id="sandbox"></canvas>
+        <div id="startHint" class="start-hint">
+          <div class="start-hint-box">
+            <strong>Imposta i parametri qui sotto e premi «Avvia».</strong>
+            <p>Ogni individuo e' una particella: cliccala per vederne i dettagli.</p>
+          </div>
+        </div>
+      </div>
+      <p class="legend">
+        <span class="lg"><span class="lg-shape circle"></span> femmina</span>
+        <span class="lg"><span class="lg-shape square"></span> maschio</span>
+        <span class="lg muted">colore = genotipo al gene selezionato</span>
+      </p>
+    </section>
+
+    <!-- 2) BARRA TEMPORALE in stile lettore video. -->
+    <section class="panel transport" aria-label="Controllo del tempo">
+      <button id="playBtn" class="play-btn" aria-label="Play">▶ Play</button>
+      <input id="slider" class="time-slider" type="range" min="0" max="0" value="0"
+             step="1" aria-label="Linea temporale" />
+      <span id="timeLabel" class="time-label">Generazione 0 / 0</span>
+      <label class="speed-ctrl">
+        Velocita'
+        <input id="speed" type="range" min="0.5" max="30" step="0.5" value="4" />
+        <span id="speedLabel">4×</span>
+      </label>
+    </section>
+
+    <!-- 3) GRAFICO delle frequenze alleliche + scelta del gene. -->
+    <section class="panel chart-panel" aria-label="Andamento delle frequenze alleliche">
+      <div class="chart-head">
+        <h2>Frequenze alleliche nel tempo</h2>
+        <label class="gene-select">
+          Gene mostrato
+          <select id="geneSelect"></select>
+        </label>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chart"></canvas>
+      </div>
+    </section>
+
+    <!-- Scostamento da Hardy-Weinberg. -->
+    <section class="panel hw-panel" aria-label="Equilibrio di Hardy-Weinberg">
+      <h2>Equilibrio di Hardy-Weinberg</h2>
+      <div id="hwPanel">
+        <p class="hint">Le statistiche di Hardy-Weinberg compariranno qui.</p>
+      </div>
+    </section>
+
+    <!-- Le cinque manopole: sempre visibili e regolabili, anche a sim avviata. -->
+    <section class="panel forces-panel" aria-label="Forze evolutive">
+      <h2>Le cinque forze</h2>
+      <p class="hint">Con tutte le manopole a 0 la popolazione resta all'equilibrio di Hardy-Weinberg.</p>
+      <div id="knobs" class="knobs"></div>
+    </section>
+
+    <!-- Parametri di setup (bloccati mentre la simulazione gira). -->
+    <section class="panel setup-panel" aria-label="Impostazioni iniziali">
+      <h2>Impostazioni iniziali</h2>
+      <div class="setup-grid">
+        <label>N. individui
+          <input id="cfgSize" type="number" min="2" max="10000" step="1" />
+        </label>
+        <label>N. geni
+          <input id="cfgGenes" type="number" min="1" max="6" step="1" />
+        </label>
+        <label>Alleli per gene
+          <input id="cfgAlleles" type="number" min="2" max="6" step="1" />
+        </label>
+        <label>Seme casuale
+          <input id="cfgSeed" type="number" step="1" />
+        </label>
+      </div>
+      <div class="setup-actions">
+        <button id="startBtn" class="primary">Avvia</button>
+        <button id="resetBtn" class="secondary">Reset</button>
+      </div>
+    </section>
+
+    <!-- Pannello informazioni sull'individuo selezionato. -->
+    <section class="panel info-panel" aria-label="Individuo selezionato">
+      <h2>Individuo selezionato</h2>
+      <div id="infoPanel">
+        <p class="hint">Clicca un individuo nella sandbox per vederne i dettagli.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <p>PopSim — strumento didattico di genetica di popolazione.</p>
+  </footer>
+
+  <!-- Moduli ES nativi: nessun bundler, nessuno step di build. -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
