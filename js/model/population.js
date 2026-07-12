@@ -114,27 +114,6 @@ export class Population {
     this.tick++;
   }
 
-  // Aggiorna solo le posizioni (animazione). Separato da step() perche' e'
-  // puramente decorativo e viene chiamato a ogni frame di rendering, mentre la
-  // genetica avanza al ritmo (piu' lento) scelto dall'utente.
-  animate() {
-    const W = this.world.width;
-    const H = this.world.height;
-    for (const ind of this.individuals) {
-      ind.vx += this.rng.range(-0.3, 0.3);
-      ind.vy += this.rng.range(-0.3, 0.3);
-      const sp = Math.hypot(ind.vx, ind.vy);
-      const max = 1.6;
-      if (sp > max) { ind.vx *= max / sp; ind.vy *= max / sp; }
-      ind.x += ind.vx;
-      ind.y += ind.vy;
-      if (ind.x < 0) { ind.x = 0; ind.vx *= -1; }
-      else if (ind.x > W) { ind.x = W; ind.vx *= -1; }
-      if (ind.y < 0) { ind.y = 0; ind.vy *= -1; }
-      else if (ind.y > H) { ind.y = H; ind.vy *= -1; }
-    }
-  }
-
   // Statistiche del tick corrente, per il grafico, il pannello HW e le info.
   stats() {
     const perGene = [];

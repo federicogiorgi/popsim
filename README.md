@@ -12,20 +12,21 @@ all'equilibrio di Hardy-Weinberg**: è il comportamento di riferimento.
 
 ## Come si usa
 
-1. Apri la pagina. In fondo, nel riquadro **Impostazioni iniziali**, scegli
-   numero di individui (max 10000), numero di geni, alleli per gene e seme
-   casuale. Regola le **cinque manopole** (tutte a 0 = Hardy-Weinberg).
-2. Premi **Avvia**. La simulazione parte e viene registrata generazione per
-   generazione.
-3. La **barra temporale** (stile lettore video) permette di mettere in
-   pausa/riprendere (anche con la **barra spaziatrice**) e di trascinare il
-   cursore per rivedere stati passati.
+1. Il sito si apre sulla **schermata di setup**: scegli numero di individui
+   (max 10000), **numero di generazioni** da simulare, numero di geni, alleli per
+   gene e seme casuale, e regola le **cinque forze** (tutte a 0 = Hardy-Weinberg).
+2. Premi **Avvia simulazione**. Tutte le generazioni vengono calcolate in blocco
+   mostrando «Simulazione evolutiva in corso…» con una barra di avanzamento.
+3. Al termine appaiono **sandbox** e **grafico**, e la simulazione è **navigabile**:
+   la **barra temporale** (stile lettore video) mette in pausa/riprende (anche con
+   la **barra spaziatrice**) e il cursore si trascina per rivedere qualsiasi
+   generazione. Il cursore è allineato con la barra verticale del grafico.
 4. Il **grafico** mostra l'andamento delle frequenze alleliche; il menu a tendina
-   sceglie quale gene visualizzare. La barra verticale indica il tempo corrente.
-5. **Clicca un individuo** nella sandbox per vederne età, sesso, corredo allelico
-   e coefficiente F.
-6. Le manopole restano regolabili **durante** la simulazione: gli effetti si
-   vedono nelle generazioni successive.
+   sceglie quale gene visualizzare.
+5. **Clicca un individuo** nella sandbox: una scheda in overlay ne mostra età,
+   sesso, corredo allelico e coefficiente F, senza lasciare la schermata.
+6. I **parametri restano in fondo alla pagina**, modificabili: il pulsante
+   **Riavvia simulazione** rigenera tutto con i nuovi valori.
 
 ## Vincoli tecnici rispettati
 
@@ -107,13 +108,15 @@ coefficiente F oscillerebbe per rumore campionario.
 ## Prestazioni
 
 Regge fino a **10000 individui**; il caso tipico d'aula è un centinaio. La logica
-genetica per generazione è O(N) ed è leggera: il costo maggiore è il disegno
-delle particelle sul Canvas, che resta sul thread principale. Il passo genetico è
-**disaccoppiato** dal rendering (le frequenze avanzano al ritmo scelto con la
-manopola «Velocità», mentre l'animazione gira a molti frame al secondo): questo
-evita che l'animazione scatti. Il modello è scritto in forma pura e serializzabile
-(snapshot con array tipizzati), quindi all'occorrenza è spostabile in un **Web
-Worker** senza riscritture.
+genetica per generazione è O(N) ed è leggera. La simulazione viene **calcolata in
+blocco** all'avvio (a piccoli lotti, cedendo il controllo al browser tra un lotto
+e l'altro perché l'interfaccia non si blocchi e la barra di avanzamento si
+aggiorni), e poi **registrata**: la riproduzione successiva si limita a scorrere i
+fotogrammi già calcolati, quindi resta fluida anche navigando avanti e indietro.
+Ogni individuo mantiene una **posizione fissa** dalla nascita, così lo si può
+seguire nel tempo mentre si scorre la barra. Il modello è scritto in forma pura e
+serializzabile (snapshot con array tipizzati), quindi all'occorrenza è spostabile
+in un **Web Worker** senza riscritture.
 
 ## Estensione futura (predisposta, non attiva)
 

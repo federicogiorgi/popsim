@@ -8,7 +8,8 @@
   <!-- Percorsi relativi: il sito vive nel sottopercorso /popsim/. -->
   <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body>
+<!-- La classe su <body> commuta tra le due schermate: setup e simulazione. -->
+<body class="view-setup">
   <header class="app-header">
     <h1>PopSim</h1>
     <p class="subtitle">Simulatore di genetica di popolazione</p>
@@ -16,72 +17,99 @@
 
   <main class="app">
 
-    <!-- 1) SANDBOX: il mondo, elemento grafico principale e piu' grande. -->
-    <section class="panel sandbox-panel" aria-label="Sandbox">
-      <div class="sandbox-wrap">
-        <canvas id="sandbox"></canvas>
-        <div id="startHint" class="start-hint">
-          <div class="start-hint-box">
-            <strong>Imposta i parametri qui sotto e premi «Avvia».</strong>
-            <p>Ogni individuo e' una particella: cliccala per vederne i dettagli.</p>
+    <!-- ================= SCHERMATA DI SIMULAZIONE ================= -->
+    <!-- In fase di setup e' nascosta. Contiene sandbox, tempo, grafico, HW. -->
+    <div id="simScreen">
+
+      <!-- 1) SANDBOX: il mondo, elemento grafico principale e piu' grande. -->
+      <section class="panel sandbox-panel" aria-label="Sandbox">
+        <div class="sandbox-wrap">
+          <canvas id="sandbox"></canvas>
+
+          <!-- Overlay "generazione in corso" mostrato mentre si simula. -->
+          <div id="genOverlay" class="gen-overlay" hidden>
+            <div class="gen-box">
+              <div class="spinner" aria-hidden="true"></div>
+              <strong>Simulazione evolutiva in corso…</strong>
+              <p id="genProgress">0 / 0</p>
+              <div class="gen-bar"><div id="genBar" class="gen-bar-fill"></div></div>
+            </div>
           </div>
+
+          <!-- Scheda info dell'individuo, in overlay sulla sandbox (stessa schermata). -->
+          <aside id="infoOverlay" class="info-overlay" hidden aria-label="Individuo selezionato">
+            <button id="infoClose" class="info-close" aria-label="Chiudi">×</button>
+            <div id="infoPanel"></div>
+          </aside>
         </div>
+        <p class="legend">
+          <span class="lg"><span class="lg-shape circle"></span> femmina</span>
+          <span class="lg"><span class="lg-shape square"></span> maschio</span>
+          <span class="lg muted">colore = genotipo al gene selezionato · clicca un individuo</span>
+        </p>
+      </section>
+
+      <!-- 2) BARRA TEMPORALE. I comandi stanno SOPRA; il cursore, sotto, occupa
+           tutta la larghezza ed e' allineato con l'asse del grafico. -->
+      <section class="panel transport" aria-label="Controllo del tempo">
+        <div class="transport-controls">
+          <button id="playBtn" class="play-btn" aria-label="Play">▶ Play</button>
+          <span id="timeLabel" class="time-label">Generazione 0 / 0</span>
+          <label class="speed-ctrl">
+            Velocita'
+            <input id="speed" type="range" min="1" max="60" step="1" value="6" />
+            <span id="speedLabel">6×</span>
+          </label>
+        </div>
+        <div class="transport-track">
+          <input id="slider" class="time-slider" type="range" min="0" max="0" value="0"
+                 step="1" aria-label="Linea temporale" />
+        </div>
+      </section>
+
+      <!-- 3) GRAFICO delle frequenze alleliche + scelta del gene. -->
+      <section class="panel chart-panel" aria-label="Andamento delle frequenze alleliche">
+        <div class="chart-head">
+          <h2>Frequenze alleliche nel tempo</h2>
+          <label class="gene-select">
+            Gene mostrato
+            <select id="geneSelect"></select>
+          </label>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chart"></canvas>
+        </div>
+      </section>
+
+      <!-- Scostamento da Hardy-Weinberg. -->
+      <section class="panel hw-panel" aria-label="Equilibrio di Hardy-Weinberg">
+        <h2>Equilibrio di Hardy-Weinberg</h2>
+        <div id="hwPanel">
+          <p class="hint">Le statistiche di Hardy-Weinberg compariranno qui.</p>
+        </div>
+      </section>
+
+    </div><!-- /#simScreen -->
+
+    <!-- ================= PARAMETRI (SETUP / RIAVVIO) ================= -->
+    <!-- In fase di setup e' la schermata iniziale. Durante la simulazione
+         resta in fondo, coi parametri modificabili e il tasto "Riavvia". -->
+    <section id="setupScreen" class="panel setup-panel" aria-label="Parametri della simulazione">
+      <div class="setup-intro">
+        <h2>Imposta la simulazione</h2>
+        <p class="hint">
+          Regola i parametri iniziali e le cinque forze, poi premi «Avvia».
+          Con tutte le forze a 0 la popolazione resta all'equilibrio di Hardy-Weinberg.
+        </p>
       </div>
-      <p class="legend">
-        <span class="lg"><span class="lg-shape circle"></span> femmina</span>
-        <span class="lg"><span class="lg-shape square"></span> maschio</span>
-        <span class="lg muted">colore = genotipo al gene selezionato</span>
-      </p>
-    </section>
 
-    <!-- 2) BARRA TEMPORALE in stile lettore video. -->
-    <section class="panel transport" aria-label="Controllo del tempo">
-      <button id="playBtn" class="play-btn" aria-label="Play">▶ Play</button>
-      <input id="slider" class="time-slider" type="range" min="0" max="0" value="0"
-             step="1" aria-label="Linea temporale" />
-      <span id="timeLabel" class="time-label">Generazione 0 / 0</span>
-      <label class="speed-ctrl">
-        Velocita'
-        <input id="speed" type="range" min="0.5" max="30" step="0.5" value="4" />
-        <span id="speedLabel">4×</span>
-      </label>
-    </section>
-
-    <!-- 3) GRAFICO delle frequenze alleliche + scelta del gene. -->
-    <section class="panel chart-panel" aria-label="Andamento delle frequenze alleliche">
-      <div class="chart-head">
-        <h2>Frequenze alleliche nel tempo</h2>
-        <label class="gene-select">
-          Gene mostrato
-          <select id="geneSelect"></select>
-        </label>
-      </div>
-      <div class="chart-wrap">
-        <canvas id="chart"></canvas>
-      </div>
-    </section>
-
-    <!-- Scostamento da Hardy-Weinberg. -->
-    <section class="panel hw-panel" aria-label="Equilibrio di Hardy-Weinberg">
-      <h2>Equilibrio di Hardy-Weinberg</h2>
-      <div id="hwPanel">
-        <p class="hint">Le statistiche di Hardy-Weinberg compariranno qui.</p>
-      </div>
-    </section>
-
-    <!-- Le cinque manopole: sempre visibili e regolabili, anche a sim avviata. -->
-    <section class="panel forces-panel" aria-label="Forze evolutive">
-      <h2>Le cinque forze</h2>
-      <p class="hint">Con tutte le manopole a 0 la popolazione resta all'equilibrio di Hardy-Weinberg.</p>
-      <div id="knobs" class="knobs"></div>
-    </section>
-
-    <!-- Parametri di setup (bloccati mentre la simulazione gira). -->
-    <section class="panel setup-panel" aria-label="Impostazioni iniziali">
-      <h2>Impostazioni iniziali</h2>
+      <h3 class="group-title">Impostazioni iniziali</h3>
       <div class="setup-grid">
         <label>N. individui
           <input id="cfgSize" type="number" min="2" max="10000" step="1" />
+        </label>
+        <label>N. generazioni
+          <input id="cfgGenerations" type="number" min="1" max="2000" step="1" />
         </label>
         <label>N. geni
           <input id="cfgGenes" type="number" min="1" max="6" step="1" />
@@ -93,17 +121,13 @@
           <input id="cfgSeed" type="number" step="1" />
         </label>
       </div>
-      <div class="setup-actions">
-        <button id="startBtn" class="primary">Avvia</button>
-        <button id="resetBtn" class="secondary">Reset</button>
-      </div>
-    </section>
 
-    <!-- Pannello informazioni sull'individuo selezionato. -->
-    <section class="panel info-panel" aria-label="Individuo selezionato">
-      <h2>Individuo selezionato</h2>
-      <div id="infoPanel">
-        <p class="hint">Clicca un individuo nella sandbox per vederne i dettagli.</p>
+      <h3 class="group-title">Le cinque forze</h3>
+      <div id="knobs" class="knobs"></div>
+
+      <div class="setup-actions">
+        <button id="startBtn" class="primary">▶ Avvia simulazione</button>
+        <button id="restartBtn" class="primary">↻ Riavvia simulazione</button>
       </div>
     </section>
 

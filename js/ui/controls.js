@@ -1,12 +1,12 @@
 // ui/controls.js
 // Costruisce e gestisce i controlli dell'interfaccia:
-//   - le cinque "manopole" (sempre visibili e regolabili, anche a sim avviata)
-//   - i parametri strutturali di setup (n. individui, geni, alleli, seme)
-//   - il menu a tendina per scegliere il gene, il controllo di velocita' e i
-//     pulsanti Avvia / Reset.
+//   - le cinque "manopole" (forze evolutive)
+//   - i parametri strutturali di setup (n. individui, generazioni, geni, alleli, seme)
+//   - il menu a tendina per scegliere il gene e il controllo di velocita'.
 //
-// I controlli non contengono logica di simulazione: comunicano con main.js
-// tramite callback.
+// Gli stessi controlli fungono da schermata iniziale e, dopo l'avvio, da
+// pannello parametri in fondo alla pagina (con il tasto "Riavvia"). I valori
+// vengono letti al momento di generare la simulazione (readConfig).
 
 import { KNOB_LABELS, KNOB_HINTS, DEFAULTS, LIMITS } from '../config.js';
 
@@ -17,8 +17,8 @@ export class Controls {
   constructor(refs, callbacks) {
     this.refs = refs;
     this.cb = callbacks;
-    this.knobInputs = {};   // name -> <input range>
-    this.knobValueEls = {}; // name -> <span> con il valore numerico
+    this.knobInputs = {};
+    this.knobValueEls = {};
 
     this._buildKnobs();
     this._wireSetup();
@@ -48,9 +48,7 @@ export class Controls {
       input.value = String(DEFAULTS.knobs[name]);
       input.setAttribute('aria-label', KNOB_LABELS[name]);
       input.addEventListener('input', () => {
-        const v = parseFloat(input.value);
-        val.textContent = v.toFixed(2);
-        this.cb.onKnob(name, v);
+        val.textContent = parseFloat(input.value).toFixed(2);
       });
 
       const hint = document.createElement('p');
@@ -67,31 +65,28 @@ export class Controls {
     }
   }
 
-  // Collega i campi di setup, la scelta del gene, la velocita' e i pulsanti.
+  // Collega i campi di setup, la scelta del gene e la velocita'.
   _wireSetup() {
     const r = this.refs;
 
-    // Valori di default nei campi.
     r.sizeInput.value = String(DEFAULTS.size);
+    r.generationsInput.value = String(DEFAULTS.generations);
     r.genesInput.value = String(DEFAULTS.nGenes);
     r.allelesInput.value = String(DEFAULTS.nAlleles);
     r.seedInput.value = String(DEFAULTS.seed);
-
-    r.startBtn.addEventListener('click', () => this.cb.onStart(this.readConfig()));
-    r.resetBtn.addEventListener('click', () => this.cb.onReset());
 
     r.geneSelect.addEventListener('change', () => {
       this.cb.onGeneChange(parseInt(r.geneSelect.value, 10));
     });
 
     r.speedInput.addEventListener('input', () => {
-      const v = parseFloat(r.speedInput.value);
+      const v = parseInt(r.speedInput.value, 10);
       if (r.speedLabel) r.speedLabel.textContent = v + '×';
       this.cb.onSpeed(v);
     });
   }
 
-  // Legge e valida i parametri di setup correnti.
+  // Legge e valida i parametri correnti.
   readConfig() {
     const clampInt = (v, lo, hi, def) => {
       let n = parseInt(v, 10);
@@ -99,6 +94,7 @@ export class Controls {
       return Math.max(lo, Math.min(hi, n));
     };
     const size = clampInt(this.refs.sizeInput.value, 2, LIMITS.maxSize, DEFAULTS.size);
+    const generations = clampInt(this.refs.generationsInput.value, 1, LIMITS.maxGenerations, DEFAULTS.generations);
     const nGenes = clampInt(this.refs.genesInput.value, 1, LIMITS.maxGenes, DEFAULTS.nGenes);
     const nAlleles = clampInt(this.refs.allelesInput.value, 2, LIMITS.maxAlleles, DEFAULTS.nAlleles);
     let seed = parseInt(this.refs.seedInput.value, 10);
@@ -106,6 +102,7 @@ export class Controls {
 
     // Riscrive i valori validati nei campi (feedback all'utente).
     this.refs.sizeInput.value = String(size);
+    this.refs.generationsInput.value = String(generations);
     this.refs.genesInput.value = String(nGenes);
     this.refs.allelesInput.value = String(nAlleles);
     this.refs.seedInput.value = String(seed);
@@ -113,10 +110,10 @@ export class Controls {
     const knobs = {};
     for (const name of KNOB_ORDER) knobs[name] = parseFloat(this.knobInputs[name].value);
 
-    return { size, nGenes, nAlleles, seed, knobs };
+    return { size, generations, nGenes, nAlleles, seed, knobs };
   }
 
-  // Popola il menu dei geni (chiamato all'avvio, in base al numero di geni).
+  // Popola il menu dei geni (in base al numero di geni scelto).
   populateGenes(nGenes, selected = 0) {
     const sel = this.refs.geneSelect;
     sel.innerHTML = '';
@@ -127,15 +124,5 @@ export class Controls {
       sel.appendChild(opt);
     }
     sel.value = String(selected);
-  }
-
-  // Abilita/disabilita i campi strutturali (bloccati mentre la sim gira).
-  setStructuralEnabled(enabled) {
-    this.refs.sizeInput.disabled = !enabled;
-    this.refs.genesInput.disabled = !enabled;
-    this.refs.allelesInput.disabled = !enabled;
-    this.refs.seedInput.disabled = !enabled;
-    this.refs.startBtn.disabled = !enabled;
-    this.refs.resetBtn.disabled = enabled;
   }
 }

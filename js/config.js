@@ -8,9 +8,10 @@ export const WORLD = { width: 1000, height: 600 };
 
 // Limiti massimi accettati dai controlli di setup.
 export const LIMITS = {
-  maxSize: 10000,   // numero massimo di individui richiesto dalla specifica
-  maxGenes: 6,      // numero massimo di geni
-  maxAlleles: 6,    // numero massimo di alleli per gene
+  maxSize: 10000,       // numero massimo di individui richiesto dalla specifica
+  maxGenes: 6,          // numero massimo di geni
+  maxAlleles: 6,        // numero massimo di alleli per gene
+  maxGenerations: 2000, // numero massimo di generazioni simulabili in blocco
 };
 
 // Parametri iniziali di default. Le cinque manopole partono da 0 così che,
@@ -19,6 +20,7 @@ export const DEFAULTS = {
   size: 100,
   nGenes: 2,
   nAlleles: 2,
+  generations: 100,  // numero di generazioni da simulare in blocco
   seed: 12345,
   knobs: {
     drift: 0,      // deriva genetica

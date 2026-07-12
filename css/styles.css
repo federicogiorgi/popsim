@@ -16,6 +16,10 @@
   --warn: #b26a00;
   --bad: #c62828;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  /* Rientri dell'area di disegno del grafico (devono combaciare con le
+     costanti "padding" in js/ui/chart.js) per allineare il cursore temporale. */
+  --plot-left: 40px;
+  --plot-right: 12px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -89,6 +93,17 @@ body {
 .hint { color: var(--muted); font-size: 0.88rem; margin: 4px 0; }
 .muted { color: var(--muted); }
 
+/* --- Commutazione tra schermata di setup e simulazione -------------------- */
+/* In setup: si vede solo il pannello dei parametri. In simulazione: si vede
+   tutto, e il pannello dei parametri resta in fondo (ordine del DOM). */
+.view-setup #simScreen { display: none; }
+.view-setup #restartBtn { display: none; }
+.view-sim #startBtn { display: none; }
+.view-setup .setup-intro { display: block; }
+.view-sim .setup-intro { display: none; }
+/* In setup diamo un po' piu' di respiro al pannello dei parametri. */
+.view-setup #setupScreen { margin-top: 6px; }
+
 /* --- Sandbox -------------------------------------------------------------- */
 .sandbox-panel { padding: 8px; }
 .sandbox-wrap {
@@ -101,24 +116,66 @@ body {
 }
 #sandbox { width: 100%; height: 100%; display: block; cursor: pointer; }
 
-.start-hint {
+/* Overlay "simulazione in corso" sopra la sandbox. */
+.gen-overlay {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
-  text-align: center;
-  color: #e8eaed;
+  background: rgba(10, 15, 24, 0.74);
+  z-index: 6;
 }
-.start-hint-box {
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+.gen-overlay[hidden] { display: none; }
+.gen-box { text-align: center; color: #e8eaed; padding: 20px; }
+.gen-box strong { display: block; margin-top: 8px; font-size: 1rem; }
+.gen-box p { margin: 4px 0 0; color: #c8ccd2; font-variant-numeric: tabular-nums; }
+.spinner {
+  width: 34px; height: 34px;
+  margin: 0 auto;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.gen-bar {
+  width: 220px; height: 8px;
+  margin: 12px auto 0;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.gen-bar-fill { height: 100%; width: 0; background: var(--accent); transition: width 0.12s linear; }
+
+/* Scheda info dell'individuo, in overlay nell'angolo della sandbox. */
+.info-overlay {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: min(300px, calc(100% - 20px));
+  max-height: calc(100% - 20px);
+  overflow: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
   border-radius: 10px;
-  padding: 16px 18px;
-  max-width: 360px;
+  padding: 10px 12px 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  z-index: 5;
 }
-.start-hint-box p { margin: 6px 0 0; color: #c8ccd2; font-size: 0.9rem; }
+.info-overlay[hidden] { display: none; }
+.info-close {
+  position: absolute;
+  top: 6px; right: 8px;
+  width: 26px; height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.info-close:hover { background: var(--border); color: var(--ink); }
 
 .legend {
   display: flex;
@@ -132,26 +189,35 @@ body {
 .lg-shape { width: 12px; height: 12px; background: var(--muted); display: inline-block; }
 .lg-shape.circle { border-radius: 50%; }
 
-/* --- Barra temporale ------------------------------------------------------ */
-.transport {
+/* --- Barra temporale ------------------------------------------------------
+   I comandi (play, contatore, velocita') stanno in una riga SOPRA; il cursore,
+   sotto, occupa tutta la larghezza. Il cursore ha lo stesso rientro a sinistra
+   dell'asse del grafico (--plot-left) e a destra (--plot-right), cosi' i due
+   allineamenti temporali coincidono. */
+.transport { display: flex; flex-direction: column; gap: 8px; }
+.transport-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 .play-btn {
   flex: 0 0 auto;
-  min-width: 92px;
+  min-width: 96px;
   padding: 8px 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--accent);
   border-radius: 8px;
   background: var(--accent);
   color: var(--accent-ink);
   font-weight: 600;
   cursor: pointer;
 }
-.time-slider { flex: 1 1 200px; min-width: 140px; }
-.time-label { flex: 0 0 auto; font-variant-numeric: tabular-nums; font-size: 0.85rem; color: var(--muted); }
+.time-label {
+  flex: 1 1 auto;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
 .speed-ctrl {
   flex: 0 0 auto;
   display: inline-flex;
@@ -160,7 +226,12 @@ body {
   font-size: 0.82rem;
   color: var(--muted);
 }
-.speed-ctrl input { width: 96px; }
+.speed-ctrl input { width: 110px; }
+.transport-track {
+  padding-left: var(--plot-left);
+  padding-right: var(--plot-right);
+}
+.time-slider { width: 100%; display: block; margin: 0; }
 
 /* --- Grafico -------------------------------------------------------------- */
 .chart-head {
@@ -228,13 +299,24 @@ table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
 .knob-hint { margin: 0; font-size: 0.78rem; color: var(--muted); }
 
 /* --- Setup ---------------------------------------------------------------- */
+.setup-intro h2 { margin: 0 0 4px; font-size: 1.15rem; }
+.group-title {
+  margin: 16px 0 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+}
 .setup-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 @media (min-width: 560px) {
-  .setup-grid { grid-template-columns: repeat(4, 1fr); }
+  .setup-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
 }
 .setup-grid label {
   display: flex;
