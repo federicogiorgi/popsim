@@ -17,9 +17,9 @@
 
   <main class="app">
 
-    <!-- ================= SCHERMATA DI SIMULAZIONE ================= -->
-    <!-- In fase di setup e' nascosta. Contiene sandbox, tempo, grafico, HW. -->
-    <div id="simScreen">
+    <!-- ===== COLONNA SINISTRA: sandbox + barra tempo + grafico ===== -->
+    <!-- In fase di setup e' nascosta. -->
+    <div class="sim-left">
 
       <!-- 1) SANDBOX: il mondo, elemento grafico principale e piu' grande. -->
       <section class="panel sandbox-panel" aria-label="Sandbox">
@@ -36,7 +36,7 @@
             </div>
           </div>
 
-          <!-- Scheda info dell'individuo, in overlay sulla sandbox (stessa schermata). -->
+          <!-- Scheda info dell'individuo, in overlay sulla sandbox. -->
           <aside id="infoOverlay" class="info-overlay" hidden aria-label="Individuo selezionato">
             <button id="infoClose" class="info-close" aria-label="Chiudi">×</button>
             <div id="infoPanel"></div>
@@ -67,7 +67,7 @@
         </div>
       </section>
 
-      <!-- 3) GRAFICO delle frequenze alleliche + scelta del gene. -->
+      <!-- 3) GRAFICO delle frequenze alleliche. -->
       <section class="panel chart-panel" aria-label="Andamento delle frequenze alleliche">
         <div class="chart-head">
           <h2>Frequenze alleliche nel tempo</h2>
@@ -77,66 +77,75 @@
         </div>
       </section>
 
-      <!-- Scostamento da Hardy-Weinberg. -->
-      <section class="panel hw-panel" aria-label="Equilibrio di Hardy-Weinberg">
-        <h2>Equilibrio di Hardy-Weinberg</h2>
-        <div id="hwPanel">
-          <p class="hint">Le statistiche di Hardy-Weinberg compariranno qui.</p>
-        </div>
-      </section>
+    </div><!-- /.sim-left -->
 
-    </div><!-- /#simScreen -->
-
-    <!-- ================= PARAMETRI (SETUP / RIAVVIO) ================= -->
-    <!-- In fase di setup e' la schermata iniziale. Durante la simulazione
-         resta in fondo, coi parametri modificabili e il tasto "Riavvia". -->
+    <!-- ===== COLONNA DESTRA: parametri (setup / riavvio) ===== -->
+    <!-- In fase di setup e' la schermata iniziale (con «Avvia»). Durante la
+         simulazione sta a destra della sandbox, coi parametri modificabili e il
+         tasto «Riavvia» in alto. L'ordine dei blocchi cambia tra le due fasi
+         tramite la proprieta' CSS 'order'. -->
     <section id="setupScreen" class="panel setup-panel" aria-label="Parametri della simulazione">
       <div class="setup-intro">
         <h2>Imposta la simulazione</h2>
         <p class="hint">
           La simulazione si basa su un solo gene (con più alleli possibili). Gli
           individui nascono, si accoppiano e muoiono, anno dopo anno. Regola i
-          parametri iniziali e le forze, poi premi «Avvia». Con la sola mortalità = 1
-          la popolazione resta all'incirca costante ed evolve per pura deriva.
+          parametri iniziali e le forze, poi premi «Avvia». Con tutte le forze a 0
+          (e la sola mortalità = 1) le frequenze restano costanti: è l'equilibrio
+          di Hardy-Weinberg.
         </p>
       </div>
-
-      <h3 class="group-title">Impostazioni iniziali</h3>
-      <div class="setup-grid">
-        <label>N. individui
-          <input id="cfgSize" type="number" min="2" max="1000" step="1" />
-        </label>
-        <label>Durata (anni)
-          <input id="cfgYears" type="number" min="1" max="10000" step="1" />
-        </label>
-        <label>Vita media (anni)
-          <input id="cfgLife" type="number" min="3" max="100" step="1" />
-        </label>
-        <label>Alleli iniziali
-          <input id="cfgAlleles" type="number" min="2" max="9" step="1" />
-        </label>
-        <label>Seme casuale
-          <input id="cfgSeed" type="number" step="1" />
-        </label>
-      </div>
-
-      <h3 class="group-title">Frequenze alleliche iniziali</h3>
-      <p class="hint">La somma viene riportata a 1 all'avvio.</p>
-      <div id="freqInputs" class="freq-grid setup-grid"></div>
-
-      <h3 class="group-title">Forze evolutive</h3>
-      <div id="knobs" class="knobs"></div>
 
       <div class="setup-actions">
         <button id="startBtn" class="primary">▶ Avvia simulazione</button>
         <button id="restartBtn" class="primary">↻ Riavvia simulazione</button>
+      </div>
+
+      <div class="setup-block block-forces">
+        <h3 class="group-title">Forze evolutive</h3>
+        <div id="knobs" class="knobs"></div>
+      </div>
+
+      <div class="setup-block block-settings">
+        <h3 class="group-title">Impostazioni iniziali</h3>
+        <div class="setup-grid">
+          <label>N. individui
+            <input id="cfgSize" type="number" min="2" max="1000" step="1" />
+          </label>
+          <label>Durata (anni)
+            <input id="cfgYears" type="number" min="1" max="10000" step="1" />
+          </label>
+          <label>Vita media (anni)
+            <input id="cfgLife" type="number" min="3" max="100" step="1" />
+          </label>
+          <label>Alleli iniziali
+            <input id="cfgAlleles" type="number" min="2" max="9" step="1" />
+          </label>
+          <label>Seme casuale
+            <input id="cfgSeed" type="number" step="1" />
+          </label>
+        </div>
+      </div>
+
+      <div class="setup-block block-freqs">
+        <h3 class="group-title">Frequenze alleliche iniziali</h3>
+        <p class="hint">La somma viene riportata a 1 all'avvio.</p>
+        <div id="freqInputs" class="freq-grid setup-grid"></div>
+      </div>
+    </section>
+
+    <!-- ===== SOTTO A TUTTO: Hardy-Weinberg e frequenze genotipiche osservate ===== -->
+    <section class="panel hw-panel" aria-label="Equilibrio di Hardy-Weinberg">
+      <h2>Equilibrio di Hardy-Weinberg</h2>
+      <div id="hwPanel">
+        <p class="hint">Le statistiche di Hardy-Weinberg compariranno qui.</p>
       </div>
     </section>
 
   </main>
 
   <footer class="app-footer">
-    <p>PopSim — strumento didattico di genetica di popolazione.</p>
+    <p>PopSim — strumento didattico di genetica di popolazione. Sviluppato da Federico M. Giorgi.</p>
   </footer>
 
   <!-- Moduli ES nativi: nessun bundler, nessuno step di build. -->

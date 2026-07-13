@@ -77,6 +77,29 @@ body {
   gap: 12px;
 }
 
+/* --- Layout DESKTOP a due colonne (in simulazione) -----------------------
+   A sinistra: sandbox, barra del tempo e grafico. A destra: i parametri
+   (larghi circa 3/5 della colonna sinistra: 5fr contro 3fr). Sotto a tutto,
+   a piena larghezza, il pannello di Hardy-Weinberg. Sotto i 900px si torna a
+   una singola colonna (impilata). */
+.sim-left { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+
+@media (min-width: 900px) {
+  body.view-sim .app {
+    max-width: 1440px;
+    display: grid;
+    grid-template-columns: 5fr 3fr;
+    grid-template-areas:
+      "left params"
+      "hw   hw";
+    align-items: start;
+    column-gap: 16px;
+  }
+  body.view-sim .sim-left { grid-area: left; }
+  body.view-sim #setupScreen { grid-area: params; }
+  body.view-sim .hw-panel { grid-area: hw; }
+}
+
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -96,13 +119,30 @@ body {
 /* --- Commutazione tra schermata di setup e simulazione -------------------- */
 /* In setup: si vede solo il pannello dei parametri. In simulazione: si vede
    tutto, e il pannello dei parametri resta in fondo (ordine del DOM). */
-.view-setup #simScreen { display: none; }
+.view-setup .sim-left { display: none; }
+.view-setup .hw-panel { display: none; }
 .view-setup #restartBtn { display: none; }
 .view-sim #startBtn { display: none; }
 .view-setup .setup-intro { display: block; }
 .view-sim .setup-intro { display: none; }
-/* In setup diamo un po' piu' di respiro al pannello dei parametri. */
-.view-setup #setupScreen { margin-top: 6px; }
+
+/* --- Ordine dei blocchi nel pannello parametri --------------------------- */
+.setup-panel { display: flex; flex-direction: column; gap: 4px; }
+.setup-block { display: flex; flex-direction: column; }
+
+/* SETUP (schermata iniziale): intro, impostazioni, frequenze, forze, «Avvia». */
+.view-setup .setup-intro   { order: 0; }
+.view-setup .block-settings { order: 1; }
+.view-setup .block-freqs    { order: 2; }
+.view-setup .block-forces   { order: 3; }
+.view-setup .setup-actions  { order: 4; }
+
+/* SIMULAZIONE (colonna destra): «Riavvia» in alto, poi forze, impostazioni,
+   frequenze. */
+.view-sim .setup-actions  { order: 0; }
+.view-sim .block-forces   { order: 1; }
+.view-sim .block-settings { order: 2; }
+.view-sim .block-freqs    { order: 3; }
 
 /* --- Sandbox -------------------------------------------------------------- */
 .sandbox-panel { padding: 8px; }
