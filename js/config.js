@@ -29,7 +29,7 @@ export const DEFAULTS = {
   years: 1000,         // durata della simulazione, in anni
   meanLife: 10,        // vita media di un individuo, in anni
   seed: 12345,
-  speed: 30,           // anni al secondo in riproduzione (default)
+  speed: 1,            // anni al secondo in riproduzione (default)
   knobs: {
     mortality: 1,      // morti per ogni nato (1 = popolazione costante)
     drift: 0,          // deriva genetica (0 = frequenze costanti)

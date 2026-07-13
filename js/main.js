@@ -19,7 +19,7 @@ import { Controls } from './ui/controls.js';
 import { Timeline } from './ui/timeline.js';
 import { HWPanel } from './ui/hwPanel.js';
 import { InfoPanel, personFromSnapshot } from './ui/infoPanel.js';
-import { WORLD } from './config.js';
+import { WORLD, DEFAULTS } from './config.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -40,7 +40,7 @@ const state = {
   generating: false, // true durante la generazione in blocco
   playing: false,    // true durante la riproduzione
   cursor: 0,         // anno attualmente mostrato
-  speed: 30,         // anni al secondo in riproduzione
+  speed: DEFAULTS.speed, // anni al secondo in riproduzione
   selectedId: null,  // individuo selezionato (per la scheda info)
 };
 
