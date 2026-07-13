@@ -37,7 +37,7 @@ const state = {
   generating: false, // true durante la generazione in blocco
   playing: false,    // true durante la riproduzione
   cursor: 0,         // anno attualmente mostrato
-  speed: 6,          // anni al secondo in riproduzione
+  speed: 30,         // anni al secondo in riproduzione
   selectedId: null,  // individuo selezionato (per la scheda info)
 };
 
@@ -50,6 +50,7 @@ const controls = new Controls(
     lifeInput: $('cfgLife'),
     allelesInput: $('cfgAlleles'),
     seedInput: $('cfgSeed'),
+    freqContainer: $('freqInputs'),
     speedInput: $('speed'),
     speedLabel: $('speedLabel'),
   },

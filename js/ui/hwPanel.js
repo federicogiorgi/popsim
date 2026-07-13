@@ -38,18 +38,20 @@ export class HWPanel {
     else if (p >= 0.01) { verdict = 'scostamento da HW (p < 0.05)'; cls = 'warn'; }
     else { verdict = 'forte scostamento da HW (p < 0.01)'; cls = 'bad'; }
 
-    // Formula di riferimento, esplicita nel caso a due alleli.
-    let formula;
+    // Formula di riferimento, sempre mostrata (con esponenti in apice).
+    let formula =
+      '<code>p<sup>2</sup> + 2pq + q<sup>2</sup> = 1</code>';
     if (k === 2) {
+      // Espansione numerica esplicita nel caso a due alleli.
       const pi = obs[present[0]], qi = obs[present[1]];
-      formula =
-        '<code>p² + 2pq + q² = 1</code> &nbsp;→&nbsp; ' +
+      formula += ' &nbsp;→&nbsp; ' +
         '<code>' + (pi * pi).toFixed(3) + ' + ' + (2 * pi * qi).toFixed(3) +
         ' + ' + (qi * qi).toFixed(3) + ' = ' +
         (pi * pi + 2 * pi * qi + qi * qi).toFixed(3) + '</code>';
     } else {
-      formula = 'Attese: omozigote A<sub>i</sub>A<sub>i</sub> = p<sub>i</sub>² ; ' +
-        'eterozigote A<sub>i</sub>A<sub>j</sub> = 2·p<sub>i</sub>·p<sub>j</sub>.';
+      // Con piu' di due alleli, la generalizzazione della stessa relazione.
+      formula += '<br><span class="muted">omozigote A<sub>i</sub>A<sub>i</sub> = p<sub>i</sub><sup>2</sup> ; ' +
+        'eterozigote A<sub>i</sub>A<sub>j</sub> = 2·p<sub>i</sub>·p<sub>j</sub></span>';
     }
 
     // Tabella genotipi: solo classi con osservati o attesi non trascurabili.

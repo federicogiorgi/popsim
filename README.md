@@ -6,17 +6,19 @@ Pages: <https://federicogiorgi.github.io/popsim/>.
 
 La simulazione si basa su **un solo gene** (che può avere più alleli). Ogni
 individuo è una particella cliccabile in un "mondo" (la sandbox) dove **nasce, si
-accoppia e muore**, anno dopo anno. Nella popolazione — finita e piccola — la
-**deriva genetica** emerge da sola: con la sola **mortalità = 1** la popolazione
-resta all'incirca costante ed evolve per pura deriva, spesso fino alla fissazione
-di un allele.
+accoppia e muore**, anno dopo anno. **Con tutte le forze a 0 (e la sola
+mortalità = 1) le frequenze alleliche restano costanti e la popolazione rispetta
+l'equilibrio di Hardy-Weinberg**: nessun allele si perde. Attivando le forze —
+deriva, mutazione, migrazione, selezione, accoppiamento non casuale — le
+frequenze iniziano a evolvere.
 
 ## Come si usa
 
 1. Il sito si apre sulla **schermata di setup**: scegli numero di individui,
    **durata** della simulazione (in anni, fino a 10000), **vita media** di un
-   individuo (in anni), numero di **alleli iniziali** (max 9) e seme casuale, e
-   regola le **forze evolutive**.
+   individuo (in anni), numero di **alleli iniziali** (max 9), le loro
+   **frequenze iniziali** (un campo per allele; la somma viene riportata a 1) e
+   il seme casuale, e regola le **forze evolutive**.
 2. Premi **Avvia simulazione**. Tutti gli anni vengono calcolati in blocco
    mostrando «Simulazione evolutiva in corso…» con una barra di avanzamento.
 3. Al termine appaiono **sandbox** e **grafico**, e la simulazione è **navigabile**:
@@ -32,14 +34,22 @@ di un allele.
 
 ## Il modello, in breve
 
-Modello **individuo-centrico e spaziale** (un solo gene, più alleli possibili):
+Modello a **due livelli** (un solo gene, più alleli possibili):
+
+1. **Frequenze alleliche autoritative**: sono lo stato genetico della popolazione
+   ed evolvono per effetto delle forze. Con tutte le forze a 0 restano **costanti**
+   (il grafico mostra linee piatte): è l'equilibrio di Hardy-Weinberg.
+2. **Individui reali**: hanno età in anni, una genealogia (per il coefficiente F
+   di consanguineità), una posizione e un genotipo pescato in modo coerente con le
+   frequenze correnti.
 
 - **Tempo in anni.** Ogni passo della simulazione è un anno. Gli individui hanno
   un'età in anni e una durata di vita attorno alla **vita media** impostata (n
   anni, di default 10).
-- **Ciclo vitale.** Ogni anno gli individui invecchiano, gli adulti in età
-  riproduttiva (dagli **anni 2 a n-1**) si accoppiano a coppie generando prole, e
-  poi avvengono le morti. Ogni individuo si riproduce al massimo **n-2 volte**.
+- **Ciclo vitale.** Ogni anno le forze aggiornano le frequenze; gli individui
+  invecchiano; gli adulti in età riproduttiva (dagli **anni 2 a n-1**) si
+  accoppiano a coppie generando prole; poi avvengono le morti. Ogni individuo si
+  riproduce al massimo **n-2 volte**.
 - **Mortalità.** Il numero di morti è legato a quello dei nati tramite la manopola
   **Mortalità**: con **1** la popolazione resta costante, **sotto 1** cresce,
   **sopra 1** diminuisce (fino all'estinzione).
@@ -50,17 +60,17 @@ Modello **individuo-centrico e spaziale** (un solo gene, più alleli possibili):
   solo dagli alleli**: un omozigote ha una tinta unita; un **eterozigote** è
   tagliato in **diagonale**, con l'allele minore (in ordine alfabetico A1<…<A9) in
   alto a sinistra e il maggiore in basso a destra.
-- **Deriva.** Essendo la popolazione finita, le frequenze alleliche fluttuano da
-  sole; più piccola è la popolazione, più forte è la deriva.
 
 ### Le forze evolutive
 
 | Manopola | Effetto |
 |---|---|
 | **Mortalità** | Morti per ogni nato: 1 = popolazione costante, <1 crescita, >1 declino. |
-| **Mutazione** | Un allele trasmesso può mutare in un **nuovo allele**. Cap a **9 alleli**: oltre, nessun nuovo allele (così le etichette restano a una cifra e l'ordine alfabetico è ben definito). |
-| **Selezione** | Vantaggio di sopravvivenza direzionale a favore dell'allele **A1**. |
-| **Migrazione** | Una frazione dei nuovi nati è in realtà un **immigrato non imparentato**, con alleli casuali. |
+| **Deriva genetica** | Campionamento casuale delle frequenze (Wright-Fisher): a 0 le frequenze restano costanti, sopra 0 compiono una passeggiata aleatoria e possono fissarsi. Più forte nelle popolazioni piccole. |
+| **Mutazione** | Comparsa di **nuovi alleli** nel tempo. Cap a **9 alleli**: oltre, nessun nuovo allele (così le etichette restano a una cifra e l'ordine alfabetico è ben definito). |
+| **Migrazione** | Una frazione dei nuovi nati è un **immigrato non imparentato**: avvicina le frequenze e abbassa la consanguineità. |
+| **Selezione** | Vantaggio direzionale a favore dell'allele **A1**. |
+| **Accoppiamento non casuale** | Accoppiamento tra simili: eccesso di omozigoti (deviazione da HW), senza cambiare le frequenze alleliche. |
 
 ### Consanguineità (coefficiente F)
 
@@ -113,14 +123,14 @@ js/
   recorder.js         cronologia della simulazione (per tornare indietro nel tempo)
   model/              LA "GENETICA" - logica pura, indipendente dal renderer
     rng.js            generatore casuale deterministico (riproducibilità)
-    genetics.js       misure (frequenze, eterozigosità, Hardy-Weinberg, test chi-quadro)
+    genetics.js       forze sulle frequenze + misure (Hardy-Weinberg, test chi-quadro)
     kinship.js        consanguineità F dal pedigree (alleli IBD)
     individual.js     fabbrica di individui (dati puri, serializzabili)
-    population.js     ciclo vitale, accoppiamento spaziale, mortalità, statistiche, snapshot
+    population.js     due livelli: frequenze + individui; ciclo vitale, accoppiamento spaziale, snapshot
   render/
     sandbox.js        renderer Canvas 2D degli individui (colore diagonale) + selezione col clic
   ui/
-    controls.js       manopole + parametri di setup
+    controls.js       manopole + parametri di setup + frequenze iniziali
     timeline.js       barra temporale in stile lettore video
     chart.js          grafico delle frequenze alleliche nel tempo
     hwPanel.js        pannello di scostamento da Hardy-Weinberg

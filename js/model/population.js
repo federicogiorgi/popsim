@@ -1,17 +1,20 @@
 // population.js
-// La popolazione: individui reali che nascono, si riproducono e muoiono.
+// La popolazione: frequenze alleliche + individui reali che nascono, si
+// accoppiano e muoiono.
 //
-// Modello INDIVIDUO-CENTRICO (un solo gene, piu' alleli possibili):
-//   - Ogni individuo ha eta' in ANNI, un genotipo [a, b], una durata di vita e
-//     una posizione nello spazio.
-//   - Ogni ANNO (un tick): tutti invecchiano; gli adulti in eta' riproduttiva si
-//     accoppiano a coppie e generano prole; poi avvengono le morti (per vecchiaia
-//     e in numero legato alla mortalita' impostata). La deriva genetica emerge da
-//     sola perche' la popolazione e' finita.
-//   - Le posizioni non sono casuali: in ogni anno ciascun individuo e' ISOLATO
-//     oppure ACCANTO al partner con cui si accoppia; la prole nasce vicino ai
-//     genitori (ma non a diretto contatto).
-//   - La consanguineita' F si calcola dal pedigree (alleli IBD), vedi kinship.js.
+// Modello a DUE LIVELLI (un solo gene, piu' alleli possibili):
+//   1. FREQUENZE ALLELICHE autoritative (this.freq): sono lo stato genetico della
+//      popolazione ed evolvono per effetto delle forze (deriva, selezione,
+//      migrazione, mutazione). Con tutte le forze a 0 restano COSTANTI: e'
+//      l'equilibrio di Hardy-Weinberg (nessun allele si perde).
+//   2. INDIVIDUI reali: hanno eta' in ANNI, una genealogia (per il coefficiente F
+//      di consanguineita', da IBD), una posizione e un genotipo pescato in modo
+//      coerente con le frequenze correnti.
+//
+// Ogni ANNO (un tick): le forze aggiornano le frequenze; tutti invecchiano; gli
+// adulti in eta' riproduttiva si accoppiano a coppie e generano prole (tanto
+// meno quanto piu' sono consanguinei); poi avvengono le morti. Le posizioni non
+// sono casuali: ciascuno e' isolato oppure accanto al partner, con la prole vicina.
 //
 // Questa classe NON disegna nulla: espone stato, statistiche e snapshot.
 
@@ -29,7 +32,6 @@ export class Population {
 
     this.size0 = config.size;         // popolazione iniziale (riferimento)
     this.meanLife = config.meanLife;  // vita media in anni (n)
-    this.nAllelesInit = config.nAlleles;
     this.alleleCount = config.nAlleles; // alleli distinti esistenti (cresce con la mutazione, max 9)
     this.knobs = { ...config.knobs };
 
@@ -37,39 +39,52 @@ export class Population {
     this.nextId = 1;
     this.kin = new KinshipTracker();
 
+    // Frequenze alleliche autoritative (lunghezza fissa 9, attivi i primi
+    // alleleCount). Inizializzate dalle frequenze scelte dall'utente.
+    this.freq = new Array(MAX_ALLELES).fill(0);
+    const init = G.normalize(config.initFreq.slice(0, this.alleleCount));
+    for (let i = 0; i < this.alleleCount; i++) this.freq[i] = init[i];
+
+    // Sorgente dei migranti: distribuzione uniforme sugli alleli presenti.
+    this._migrantSource = () => {
+      const s = new Array(MAX_ALLELES).fill(0);
+      for (let i = 0; i < this.alleleCount; i++) s[i] = 1 / this.alleleCount;
+      return s;
+    };
+
     // Coppie formate quest'anno (per il layout spaziale e la scheda info).
-    this.pairs = [];          // [{ a: idMaschio, b: idFemmina, child: idFiglio }]
+    this.pairs = [];   // [{ a: idMaschio, b: idFemmina, child: idFiglio|null }]
 
     // Popolazione iniziale: individui fondatori, con eta' varia (struttura d'eta'
-    // gia' "a regime", cosi' non muoiono e non si riproducono tutti insieme).
+    // gia' "a regime") e genotipo coerente con le frequenze iniziali.
     this.individuals = [];
-    for (let i = 0; i < this.size0; i++) {
-      this.individuals.push(this._makeFounder());
-    }
+    for (let i = 0; i < this.size0; i++) this.individuals.push(this._makeFounder());
     this._layout();
   }
 
   // Numero massimo di riproduzioni per individuo: negli anni di vita da 2 a n-1.
   get maxRepro() { return Math.max(0, this.meanLife - 2); }
 
-  // Aggiorna una manopola (chiamato dall'interfaccia mentre la simulazione gira).
   setKnob(name, value) { this.knobs[name] = value; }
 
   // Durata della vita di un individuo: attorno alla vita media, con variabilita'.
   _drawLifespan() {
     const n = this.meanLife;
     const v = Math.round(this.rng.gaussian(n, Math.max(1, n * LIFE.lifeVariation)));
-    return Math.max(3, Math.min(n * 2, v)); // almeno 3 anni, non oltre il doppio della media
+    return Math.max(3, Math.min(n * 2, v));
   }
 
-  // Crea un fondatore: genotipo pescato dagli alleli iniziali, non imparentato.
+  // Pesca un allele secondo le frequenze correnti (gli alleli assenti hanno 0).
+  _sampleAllele() { return this.rng.weighted(this.freq); }
+
+  // Crea un fondatore: non imparentato, genotipo pescato dalle frequenze iniziali.
   _makeFounder() {
     const lifespan = this._drawLifespan();
     const ind = createIndividual({
       id: this.nextId++,
       sex: this.rng.bool(0.5) ? 'F' : 'M',
-      age: this.rng.int(lifespan),          // eta' iniziale varia
-      genotype: [this.rng.int(this.nAllelesInit), this.rng.int(this.nAllelesInit)],
+      age: this.rng.int(lifespan),
+      genotype: [this._sampleAllele(), this._sampleAllele()],
       lifespan,
       F: 0, mother: 0, father: 0,
     });
@@ -77,59 +92,48 @@ export class Population {
     return ind;
   }
 
-  // Trasmissione di un allele da un genitore, con possibile mutazione in un
-  // NUOVO allele. Sopra il tetto di 9 alleli, nessun nuovo allele viene creato.
-  _transmit(allele) {
-    const mu = this.knobs.mutation * SCALES.mutationMax;
+  // Applica le forze che agiscono sulle FREQUENZE alleliche (livello 1).
+  _applyForces() {
+    const twoN = 2 * Math.max(1, this.individuals.length);
+    let p = this.freq.slice(0, this.alleleCount);
+    p = G.applySelection(p, this.knobs.selection * SCALES.selectionMax, FAVORED_ALLELE);
+    const src = this._migrantSource().slice(0, this.alleleCount);
+    p = G.applyMigration(p, this.knobs.migration * SCALES.migrationMax, src);
+    p = G.applyDrift(p, this.knobs.drift, twoN, this.rng);
+    for (let i = 0; i < this.alleleCount; i++) this.freq[i] = p[i];
+
+    // MUTAZIONE: comparsa occasionale di un NUOVO allele (fino al tetto di 9).
+    const mu = this.knobs.mutation * SCALES.mutationNewAllele;
     if (mu > 0 && this.alleleCount < MAX_ALLELES && this.rng.next() < mu) {
-      return this.alleleCount++; // nuovo allele: indice successivo
+      const idx = this.alleleCount;
+      const initFreq = Math.max(0.02, twoN > 0 ? 1 / twoN : 0.02);
+      for (let i = 0; i < idx; i++) this.freq[i] *= (1 - initFreq);
+      this.freq[idx] = initFreq;
+      this.alleleCount++;
     }
-    return allele;
   }
 
-  // Genera la prole di una coppia (madre = femmina, padre = maschio).
-  _mate(mother, father) {
-    // Segregazione mendeliana: un allele a caso da ciascun genitore, con mutazione.
-    let a = this._transmit(mother.genotype[this.rng.int(2)]);
-    let b = this._transmit(father.genotype[this.rng.int(2)]);
-
-    // Migrazione: una frazione dei nuovi nati e' in realta' un immigrato non
-    // imparentato, con alleli casuali pescati dal pool esistente.
-    const m = this.knobs.migration * SCALES.migrationMax;
-    const isMigrant = m > 0 && this.rng.next() < m;
-    if (isMigrant) {
-      a = this.rng.int(this.alleleCount);
-      b = this.rng.int(this.alleleCount);
-    }
-
-    const child = createIndividual({
-      id: this.nextId++,
-      sex: this.rng.bool(0.5) ? 'F' : 'M',
-      age: 0,
-      genotype: [a, b],
-      lifespan: this._drawLifespan(),
-      mother: isMigrant ? 0 : mother.id,
-      father: isMigrant ? 0 : father.id,
-    });
-
-    if (isMigrant) {
-      this.kin.addFounder(child.id, 0);
-      child.F = 0;
-    } else {
-      child.F = this.kin.addChild(child.id, mother.id, father.id);
-    }
-    return child;
+  // Genera il genotipo di un nuovo nato, coerente con le frequenze correnti.
+  // L'accoppiamento non casuale (mating) alza la probabilita' di omozigosi.
+  _childGenotype() {
+    const a = this._sampleAllele();
+    const b = this.rng.bool(this.knobs.mating) ? a : this._sampleAllele();
+    return [a, b];
   }
 
   // Avanza la simulazione di UN ANNO.
   step() {
     this.year++;
 
-    // (1) Invecchiamento.
+    // (1) Forze sulle frequenze alleliche.
+    this._applyForces();
+
+    // (2) Invecchiamento.
     for (const ind of this.individuals) ind.age++;
 
-    // (2) Accoppiamento: gli adulti in eta' riproduttiva (2..n-1) che non hanno
-    //     esaurito le riproduzioni si accoppiano a coppie maschio-femmina.
+    // (3) Accoppiamento. Gli adulti in eta' riproduttiva (2..n-1) che non hanno
+    //     esaurito le riproduzioni si accoppiano a coppie maschio-femmina e
+    //     generano prole.
     this.pairs = [];
     const eligM = [];
     const eligF = [];
@@ -142,20 +146,37 @@ export class Population {
     this.rng.shuffle(eligF);
     const nPairs = Math.min(eligM.length, eligF.length);
     const newborns = [];
+    const mMig = this.knobs.migration * SCALES.migrationMax;
     for (let i = 0; i < nPairs; i++) {
       const male = eligM[i];
       const female = eligF[i];
-      const child = this._mate(female, male);
+      const pair = { a: male.id, b: female.id, child: null };
+      this.pairs.push(pair);
+
       male.repro++;
       female.repro++;
-      this.pairs.push({ a: male.id, b: female.id, child: child.id });
+      const isMigrant = mMig > 0 && this.rng.next() < mMig;
+      const child = createIndividual({
+        id: this.nextId++,
+        sex: this.rng.bool(0.5) ? 'F' : 'M',
+        age: 0,
+        genotype: this._childGenotype(),
+        lifespan: this._drawLifespan(),
+        mother: isMigrant ? 0 : female.id,
+        father: isMigrant ? 0 : male.id,
+      });
+      if (isMigrant) {
+        this.kin.addFounder(child.id, 0);
+        child.F = 0;
+      } else {
+        child.F = this.kin.addChild(child.id, female.id, male.id);
+        pair.child = child.id; // i figli "propri" nascono accanto ai genitori
+      }
       newborns.push(child);
     }
     const births = newborns.length;
 
-    // (3) Morti. Prima quelle per vecchiaia (eta' oltre la propria durata di
-    //     vita). Poi si porta il totale a births * mortalita': cosi' mortalita' = 1
-    //     mantiene la popolazione costante, < 1 la fa crescere, > 1 la fa calare.
+    // (4) Morti: prima per vecchiaia, poi si porta il totale a births * mortalita'.
     const dead = [];
     const rest = [];
     for (const ind of this.individuals) {
@@ -170,38 +191,28 @@ export class Population {
     } else {
       survivors = rest;
     }
-
-    // La consanguineita' dei morti non serve piu': libera la loro riga.
     for (const d of dead) this.kin.remove(d.id);
 
-    // Tetto di sicurezza (capacita' portante): con mortalita' < 1 la crescita e'
-    // esponenziale; senza un limite la popolazione esploderebbe e bloccherebbe il
-    // browser (il pedigree ha costo ~N²). I nati in eccesso non sopravvivono.
+    // Tetto di sicurezza (capacita' portante): evita che la crescita esponenziale
+    // (mortalita' < 1) faccia esplodere la popolazione e blocchi il browser.
     let excess = survivors.length + newborns.length - LIMITS.maxSize;
     while (excess > 0 && newborns.length > 0) {
       const drop = newborns.pop();
       this.kin.remove(drop.id);
+      // se era il figlio di una coppia, scollega il riferimento
+      for (const p of this.pairs) if (p.child === drop.id) p.child = null;
       excess--;
     }
 
-    // (4) Nuova popolazione e disposizione spaziale.
+    // (5) Nuova popolazione e disposizione spaziale.
     this.individuals = survivors.concat(newborns);
     this._layout();
   }
 
-  // Uccide `k` individui scelti tra `rest`, con probabilita' crescente con l'eta'
-  // e, se la selezione e' attiva, sfavorevole a chi non porta l'allele A1.
-  // Sposta gli uccisi in `deadOut` e restituisce i sopravvissuti.
+  // Uccide `k` individui scelti tra `rest`, con probabilita' crescente con l'eta'.
+  // (La selezione agisce sulle frequenze, non qui.)
   _weightedKill(rest, k, deadOut) {
-    const s = this.knobs.selection * SCALES.selectionMax;
-    const items = rest.map((ind) => {
-      let a1 = 0;
-      if (ind.genotype[0] === FAVORED_ALLELE) a1++;
-      if (ind.genotype[1] === FAVORED_ALLELE) a1++;
-      // Piu' vecchio e/o meno alleli A1 => peso di morte piu' alto.
-      const w = (1 + ind.age) * (1 + s * (2 - a1));
-      return { ind, w, killed: false };
-    });
+    const items = rest.map((ind) => ({ ind, w: 1 + ind.age, killed: false }));
     for (let picked = 0; picked < k; picked++) {
       let total = 0;
       for (const it of items) if (!it.killed) total += it.w;
@@ -227,18 +238,16 @@ export class Population {
     const used = new Set();
     const groups = [];
 
-    // Coppie di quest'anno: genitori vicini + prole accanto (non a contatto).
     for (const p of this.pairs) {
       const members = [];
       const male = byId.get(p.a);
       const female = byId.get(p.b);
-      const child = byId.get(p.child);
+      const child = p.child != null ? byId.get(p.child) : null;
       if (male) { members.push(male); used.add(male.id); }
       if (female) { members.push(female); used.add(female.id); }
       if (child) { members.push(child); used.add(child.id); }
       if (members.length) groups.push({ kind: 'pair', members });
     }
-    // Tutti gli altri: isolati.
     for (const ind of this.individuals) {
       if (!used.has(ind.id)) groups.push({ kind: 'solo', members: [ind] });
     }
@@ -263,7 +272,6 @@ export class Population {
         g.members[0].x = cx + this.rng.range(-jit, jit);
         g.members[0].y = cy + this.rng.range(-jit, jit);
       } else {
-        // Genitori affiancati; prole poco sotto, a distanza (nessun contatto).
         const male = g.members[0];
         const female = g.members[1] || null;
         const kids = g.members.slice(2);
@@ -282,19 +290,22 @@ export class Population {
 
   // Statistiche dell'anno corrente, per il grafico, il pannello HW e le info.
   stats() {
-    // Frequenze alleliche osservate su tutti i 9 slot (gli alleli non ancora
-    // esistenti restano a 0): cosi' il grafico ha righe di lunghezza costante.
-    const freq = G.observedAlleleFreq(this.individuals, MAX_ALLELES);
-    const He = G.expectedHeterozygosity(freq);
-    const Ho = G.observedHeterozygosity(this.individuals);
+    // Frequenze alleliche AUTORITATIVE (per il grafico): con le forze a 0 restano
+    // costanti, cosi' l'andamento nel tempo mostra linee piatte (HW).
+    const freq = this.freq.slice(0, MAX_ALLELES);
 
-    // Consanguineita' media della popolazione (media degli F individuali, IBD).
+    // Consanguineita' media (media degli F individuali, da IBD).
     let sumF = 0;
     for (const ind of this.individuals) sumF += ind.F;
     const F = this.individuals.length ? sumF / this.individuals.length : 0;
 
     let males = 0;
     for (const ind of this.individuals) if (ind.sex === 'M') males++;
+
+    // Misure OSSERVATE sul campione di individui (per il test HW).
+    const hw = G.hwComparison(this.individuals, this.alleleCount);
+    const Ho = G.observedHeterozygosity(this.individuals);
+    const He = G.expectedHeterozygosity(hw.p);
 
     return {
       year: this.year,
@@ -307,12 +318,11 @@ export class Population {
       He,
       Ho,
       F,
-      hw: G.hwComparison(this.individuals, this.alleleCount),
+      hw,
     };
   }
 
-  // Snapshot compatto (array tipizzati) per registrare lo stato di ogni anno e
-  // poterlo rivedere scorrendo la barra temporale.
+  // Snapshot compatto (array tipizzati) per registrare lo stato di ogni anno.
   snapshot() {
     const n = this.individuals.length;
     const x = new Float32Array(n);

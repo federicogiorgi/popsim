@@ -21,29 +21,44 @@ export const LIMITS = {
 };
 
 // Parametri iniziali di default. Le forze partono da valori "neutri": con la
-// sola mortalita' = 1 la popolazione resta all'incirca costante ed evolve per
-// pura deriva genetica (ottimo esperimento di partenza in una piccola popolazione).
+// sola mortalita' = 1 (e tutte le altre forze a 0) le frequenze alleliche
+// restano COSTANTI e la popolazione rispetta l'equilibrio di Hardy-Weinberg.
 export const DEFAULTS = {
-  size: 50,          // numero iniziale di individui
-  nAlleles: 2,       // alleli presenti all'avvio
-  years: 1000,       // durata della simulazione, in anni
-  meanLife: 10,      // vita media di un individuo, in anni
+  size: 50,            // numero iniziale di individui
+  nAlleles: 2,         // alleli presenti all'avvio
+  years: 1000,         // durata della simulazione, in anni
+  meanLife: 10,        // vita media di un individuo, in anni
   seed: 12345,
+  speed: 30,           // anni al secondo in riproduzione (default)
   knobs: {
-    mortality: 1,    // morti per ogni nato (1 = popolazione costante)
-    mutation: 0,     // genera nuovi alleli nel tempo
-    selection: 0,    // vantaggio di sopravvivenza per l'allele A1
-    migration: 0,    // ingresso di immigranti non imparentati
+    mortality: 1,      // morti per ogni nato (1 = popolazione costante)
+    drift: 0,          // deriva genetica (0 = frequenze costanti)
+    mutation: 0,       // genera nuovi alleli nel tempo
+    migration: 0,      // ingresso di immigranti non imparentati
+    selection: 0,      // vantaggio a favore dell'allele A1
+    mating: 0,         // accoppiamento non casuale (eccesso di omozigoti)
   },
 };
+
+// Frequenze alleliche iniziali di default, in funzione del numero di alleli.
+// La somma e' sempre 1. Valori "sensati" e decrescenti.
+export function defaultFreqs(k) {
+  if (k <= 2) return [0.6, 0.4];
+  if (k === 3) return [0.5, 0.4, 0.1];
+  // k >= 4: pesi lineari decrescenti [k, k-1, ..., 1], normalizzati.
+  const w = [];
+  let s = 0;
+  for (let i = 0; i < k; i++) { w.push(k - i); s += k - i; }
+  return w.map((v) => +(v / s).toFixed(3));
+}
 
 // Traduzione delle manopole (valore adimensionale) nel parametro biologico.
 // I valori sono volutamente "esagerati" per rendere gli effetti visibili in
 // pochi anni, come serve in aula.
 export const SCALES = {
-  mutationMax: 0.02,   // probabilita' massima di mutazione per allele trasmesso
-  selectionMax: 0.5,   // svantaggio massimo di mortalita' per gli alleli diversi da A1
-  migrationMax: 0.5,   // frazione massima di nuovi nati sostituiti da immigranti
+  selectionMax: 0.1,      // vantaggio massimo di frequenza per l'allele A1, per anno
+  migrationMax: 0.1,      // frazione massima di nuovi nati che sono immigranti
+  mutationNewAllele: 0.05, // probabilita' massima, per anno, di comparsa di un nuovo allele
 };
 
 // Ciclo vitale: variabilita' della durata della vita attorno alla vita media.
@@ -64,22 +79,34 @@ export const KNOBS = [
     min: 0, max: 2, step: 0.05, default: DEFAULTS.knobs.mortality,
   },
   {
-    name: 'mutation',
-    label: 'Mutazione',
-    hint: 'Probabilità che un allele trasmesso muti in un nuovo allele (fino a un massimo di 9 alleli).',
-    min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.mutation,
+    name: 'drift',
+    label: 'Deriva genetica',
+    hint: 'Fluttuazione casuale delle frequenze alleliche: più forte nelle popolazioni piccole. A 0 le frequenze restano costanti.',
+    min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.drift,
   },
   {
-    name: 'selection',
-    label: 'Selezione',
-    hint: 'Vantaggio di sopravvivenza a favore dell’allele A1.',
-    min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.selection,
+    name: 'mutation',
+    label: 'Mutazione',
+    hint: 'Probabilità di comparsa di nuovi alleli nel tempo (fino a un massimo di 9 alleli).',
+    min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.mutation,
   },
   {
     name: 'migration',
     label: 'Migrazione',
-    hint: 'Frazione di nuovi nati sostituiti da immigranti non imparentati, con alleli casuali.',
+    hint: 'Ingresso di immigranti non imparentati: avvicina le frequenze e abbassa la consanguineità.',
     min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.migration,
+  },
+  {
+    name: 'selection',
+    label: 'Selezione',
+    hint: 'Vantaggio direzionale a favore dell’allele A1.',
+    min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.selection,
+  },
+  {
+    name: 'mating',
+    label: 'Accoppiamento non casuale',
+    hint: 'Accoppiamento tra simili: eccesso di omozigoti (F genotipico > 0), senza cambiare le frequenze alleliche.',
+    min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.mating,
   },
 ];
 

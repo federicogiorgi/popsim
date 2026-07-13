@@ -1,11 +1,92 @@
 // genetics.js
 // Funzioni PURE di genetica di popolazione, che lavorano sugli individui reali.
 //
-// Con il modello individuo-centrico la genetica non e' piu' imposta da frequenze
-// "autoritative": emerge dagli individui che nascono, si riproducono e muoiono.
-// Qui restano solo le MISURE (frequenze osservate, eterozigosita', test di
-// Hardy-Weinberg) e le utilita' statistiche di supporto. La simulazione si basa
-// su un solo gene, quindi ogni individuo ha un genotipo [a, b].
+// Modello a DUE LIVELLI:
+//   1. FREQUENZE ALLELICHE autoritative -> evolvono per effetto delle forze
+//      (deriva, selezione, migrazione, mutazione). Con tutte le forze a 0 restano
+//      costanti: e' l'equilibrio di Hardy-Weinberg, il caso di riferimento.
+//   2. INDIVIDUI reali (con genealogia, per il coefficiente F di consanguineita') ->
+//      il loro genotipo e' una realizzazione campionaria coerente con le frequenze.
+//
+// Qui stanno le forze che agiscono sulle FREQUENZE e le MISURE sulla popolazione
+// (frequenze osservate, eterozigosita', test di Hardy-Weinberg). La simulazione
+// si basa su un solo gene, quindi ogni individuo ha un genotipo [a, b].
+//
+// Convenzione: una "frequenza allelica" e' un array p con p[i] = frequenza
+// dell'allele i e somma(p) = 1.
+
+import { FAVORED_ALLELE } from '../config.js';
+
+// Riporta un vettore a somma 1 (valori non negativi). Se la somma e' nulla,
+// ritorna una distribuzione uniforme.
+export function normalize(p) {
+  let s = 0;
+  for (const v of p) s += Math.max(0, v);
+  if (s <= 0) return p.map(() => 1 / p.length);
+  return p.map((v) => Math.max(0, v) / s);
+}
+
+// ---------------------------------------------------------------------------
+// Le forze evolutive che agiscono sulle FREQUENZE alleliche
+// ---------------------------------------------------------------------------
+
+// SELEZIONE direzionale: l'allele favorito guadagna un vantaggio relativo s
+// (fitness w = 1 + s contro 1 per gli altri).
+export function applySelection(p, s, favored = FAVORED_ALLELE) {
+  if (s <= 0) return p.slice();
+  const out = p.map((pi, i) => pi * (i === favored ? 1 + s : 1));
+  return normalize(out);
+}
+
+// MIGRAZIONE: una frazione m delle frequenze viene sostituita da una sorgente
+// esterna con frequenze note (qui uniforme): avvicina p verso l'uniforme.
+export function applyMigration(p, m, source) {
+  if (m <= 0) return p.slice();
+  return p.map((pi, i) => (1 - m) * pi + m * source[i]);
+}
+
+// DERIVA GENETICA: campionamento casuale di 2N gameti (modello di Wright-Fisher).
+// L'intensita' d (0..1) miscela tra "nessuna deriva" (d = 0, frequenze invariate)
+// e "deriva piena per la dimensione N" (d = 1). N piccolo => deriva forte.
+export function applyDrift(p, d, twoN, rng) {
+  if (d <= 0) return p.slice();
+  const counts = multinomial(twoN, p, rng);
+  const wf = counts.map((c) => c / twoN);
+  const out = p.map((pi, i) => pi + d * (wf[i] - pi));
+  return normalize(out);
+}
+
+// Estrae un numero da una binomiale B(n, p). Per n grande usa l'approssimazione
+// normale; per n piccolo conta i successi uno a uno.
+export function binomial(n, p, rng) {
+  if (p <= 0) return 0;
+  if (p >= 1) return n;
+  if (n > 50) {
+    const x = Math.round(rng.gaussian(n * p, Math.sqrt(n * p * (1 - p))));
+    return Math.max(0, Math.min(n, x));
+  }
+  let c = 0;
+  for (let i = 0; i < n; i++) if (rng.next() < p) c++;
+  return c;
+}
+
+// Estrae i conteggi da una multinomiale con n prove e probabilita' probs.
+export function multinomial(n, probs, rng) {
+  const k = probs.length;
+  const out = new Array(k).fill(0);
+  let remaining = n;
+  let pRemaining = 1;
+  for (let i = 0; i < k - 1; i++) {
+    if (remaining <= 0) break;
+    const pi = pRemaining > 0 ? probs[i] / pRemaining : 0;
+    const xi = binomial(remaining, Math.max(0, Math.min(1, pi)), rng);
+    out[i] = xi;
+    remaining -= xi;
+    pRemaining -= probs[i];
+  }
+  out[k - 1] = Math.max(0, remaining);
+  return out;
+}
 
 // ---------------------------------------------------------------------------
 // Misure sulla popolazione (calcolate dagli individui reali)
