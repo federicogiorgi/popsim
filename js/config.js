@@ -34,7 +34,7 @@ export const DEFAULTS = {
     mortality: 1,      // morti per ogni nato (1 = popolazione costante)
     drift: 0,          // deriva genetica (0 = frequenze costanti)
     mutation: 0,       // genera nuovi alleli nel tempo
-    migration: 0,      // ingresso di immigranti non imparentati
+    migration: 0,      // ingresso/uscita di migranti non imparentati
     selection: 0,      // vantaggio a favore dell'allele A1
     mating: 0,         // accoppiamento non casuale (eccesso di omozigoti)
   },

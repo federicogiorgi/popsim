@@ -218,10 +218,24 @@ function render() {
     const stats = state.recorder.statsAt(cursor);
     chart.draw(state.recorder.frames, cursor);
     popChart.draw(state.recorder.frames, cursor);
-    hwPanel.render(stats);
+    hwPanel.render(stats, freqTrend(cursor));
     updateInfo(cursor);
     timeline.update(cursor, last, state.playing, stats.size);
   }
+}
+
+// Andamento delle frequenze alleliche attorno all'anno `cursor`: quanto sono
+// cambiate (al massimo, su tutti gli alleli) rispetto a qualche anno prima.
+// Serve al pannello HW per dire se la popolazione e' o meno in equilibrio (le
+// frequenze che cambiano nel tempo violano l'equilibrio di Hardy-Weinberg).
+function freqTrend(cursor, window = 15) {
+  const frames = state.recorder.frames;
+  const t0 = Math.max(0, cursor - window);
+  const f1 = frames[cursor].stats.freq;
+  const f0 = frames[t0].stats.freq;
+  let delta = 0;
+  for (let i = 0; i < f1.length; i++) delta = Math.max(delta, Math.abs(f1[i] - f0[i]));
+  return { delta, window: cursor - t0, changing: delta > 0.01 };
 }
 
 function updateInfo(cursor) {

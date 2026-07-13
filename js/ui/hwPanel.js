@@ -17,8 +17,9 @@ export class HWPanel {
     this.el = container;
   }
 
-  // stats : oggetto restituito da Population.stats()
-  render(stats) {
+  // stats    : oggetto restituito da Population.stats()
+  // freqInfo : { changing, delta, window } sull'andamento delle frequenze nel tempo
+  render(stats, freqInfo) {
     const hw = stats.hw;
     const obs = hw.p;
 
@@ -31,12 +32,27 @@ export class HWPanel {
       .map((i) => alleleLabel(i) + ' = ' + obs[i].toFixed(3))
       .join(' &nbsp; ');
 
-    // Giudizio basato sul test chi-quadro (valore-p).
+    // L'equilibrio di Hardy-Weinberg richiede DUE cose:
+    //   1) le frequenze alleliche NON cambiano nel tempo (nessuna forza che le
+    //      sposta: deriva, migrazione, selezione, mutazione);
+    //   2) le proporzioni genotipiche sono quelle di HW (accoppiamento casuale).
+    // Il test chi-quadro cattura solo la (2); la (1) si vede dall'andamento delle
+    // frequenze nel tempo (parametro freqInfo, calcolato dalla cronologia).
     const p = hw.pValue;
-    let verdict, cls;
-    if (p >= 0.05) { verdict = 'in equilibrio di Hardy-Weinberg'; cls = 'ok'; }
-    else if (p >= 0.01) { verdict = 'scostamento da HW (p < 0.05)'; cls = 'warn'; }
-    else { verdict = 'forte scostamento da HW (p < 0.01)'; cls = 'bad'; }
+    const changing = !!(freqInfo && freqInfo.changing);
+    const reasons = [];
+    let cls = 'ok';
+    if (changing) {
+      reasons.push('le frequenze alleliche stanno cambiando');
+      cls = 'warn';
+    }
+    if (p < 0.05) {
+      reasons.push('proporzioni genotipiche alterate (accoppiamento non casuale)');
+      cls = p < 0.01 ? 'bad' : 'warn';
+    }
+    const verdict = reasons.length === 0
+      ? 'in equilibrio di Hardy-Weinberg'
+      : 'NON in equilibrio: ' + reasons.join(' · ');
 
     // Formula di riferimento, sempre mostrata (con esponenti in apice).
     let formula =
@@ -69,9 +85,20 @@ export class HWPanel {
         '</tr>';
     }
 
+    // Riga sull'andamento delle frequenze nel tempo (violazione della condizione 1).
+    let trendTxt = '';
+    if (freqInfo && freqInfo.window > 0) {
+      const arrow = changing ? '↕ in variazione' : '→ stabili';
+      trendTxt = '<p class="hw-line ' + (changing ? '' : 'muted') + '">' +
+        'Frequenze nel tempo: <strong>' + arrow + '</strong> ' +
+        '<span class="muted">(variazione max ' + freqInfo.delta.toFixed(3) +
+        ' negli ultimi ' + freqInfo.window + ' anni)</span></p>';
+    }
+
     this.el.innerHTML =
       '<div class="hw-head"><span class="badge ' + cls + '">' + verdict + '</span></div>' +
       '<p class="hw-line">' + freqTxt + '</p>' +
+      trendTxt +
       '<p class="hw-formula">' + formula + '</p>' +
       '<table class="hw-table">' +
       '<thead><tr><th>Genotipo</th><th>Osservati</th><th>Attesi (HW)</th></tr></thead>' +
