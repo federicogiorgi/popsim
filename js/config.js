@@ -93,7 +93,7 @@ export const KNOBS = [
   {
     name: 'migration',
     label: 'Migrazione',
-    hint: 'Ingresso di immigranti non imparentati: avvicina le frequenze e abbassa la consanguineità.',
+    hint: 'Ingresso/uscita di migranti non imparentati: avvicina le frequenze e abbassa la consanguineità.',
     min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.migration,
   },
   {

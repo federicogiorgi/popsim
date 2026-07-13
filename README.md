@@ -68,7 +68,7 @@ Modello a **due livelli** (un solo gene, più alleli possibili):
 | **Mortalità** | Morti per ogni nato: 1 = popolazione costante, <1 crescita, >1 declino. |
 | **Deriva genetica** | Campionamento casuale delle frequenze (Wright-Fisher): a 0 le frequenze restano costanti, sopra 0 compiono una passeggiata aleatoria e possono fissarsi. Più forte nelle popolazioni piccole. |
 | **Mutazione** | Comparsa di **nuovi alleli** nel tempo. Cap a **9 alleli**: oltre, nessun nuovo allele (così le etichette restano a una cifra e l'ordine alfabetico è ben definito). |
-| **Migrazione** | Una frazione dei nuovi nati è un **immigrato non imparentato**: avvicina le frequenze e abbassa la consanguineità. |
+| **Migrazione** | Ingresso/uscita di **migranti non imparentati** da/verso una popolazione esterna (assunta con frequenze uniformi): avvicina le frequenze e abbassa la consanguineità. Il flusso è bilanciato (la popolazione resta costante); l'emigrazione è casuale e non sposta le frequenze, l'immigrazione le avvicina a quelle della sorgente. |
 | **Selezione** | Vantaggio direzionale a favore dell'allele **A1**. |
 | **Accoppiamento non casuale** | Accoppiamento tra simili: eccesso di omozigoti (deviazione da HW), senza cambiare le frequenze alleliche. |
 
