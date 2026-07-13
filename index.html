@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PopSim — Genetica di Popolazione</title>
+  <title>PopSim - Genetica di Popolazione</title>
   <meta name="description" content="Simulatore didattico di genetica di popolazione: individui che nascono, si accoppiano e muoiono, deriva, mutazione, migrazione, selezione, consanguineità ed equilibrio di Hardy-Weinberg." />
   <!-- Percorsi relativi: il sito vive nel sottopercorso /popsim/. -->
   <link rel="stylesheet" href="css/styles.css" />
@@ -17,11 +17,11 @@
 
   <main class="app">
 
-    <!-- ===== COLONNA SINISTRA: sandbox + barra tempo + grafico ===== -->
-    <!-- In fase di setup e' nascosta. -->
+    <!-- ===== COLONNA SINISTRA (in simulazione): sandbox + barra del tempo =====
+         In fase di setup e' nascosta: la pagina iniziale mostra solo i parametri. -->
     <div class="sim-left">
 
-      <!-- 1) SANDBOX: il mondo, elemento grafico principale e piu' grande. -->
+      <!-- SANDBOX: il mondo, elemento grafico principale. -->
       <section class="panel sandbox-panel" aria-label="Sandbox">
         <div class="sandbox-wrap">
           <canvas id="sandbox"></canvas>
@@ -49,8 +49,8 @@
         </p>
       </section>
 
-      <!-- 2) BARRA TEMPORALE. I comandi stanno SOPRA; il cursore, sotto, occupa
-           tutta la larghezza ed e' allineato con l'asse del grafico. -->
+      <!-- BARRA TEMPORALE. Comandi sopra (con anno e numero di individui); cursore
+           sotto, a tutta larghezza. -->
       <section class="panel transport" aria-label="Controllo del tempo">
         <div class="transport-controls">
           <button id="playBtn" class="play-btn" aria-label="Play">▶ Play</button>
@@ -67,23 +67,13 @@
         </div>
       </section>
 
-      <!-- 3) GRAFICO delle frequenze alleliche. -->
-      <section class="panel chart-panel" aria-label="Andamento delle frequenze alleliche">
-        <div class="chart-head">
-          <h2>Frequenze alleliche nel tempo</h2>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="chart"></canvas>
-        </div>
-      </section>
-
     </div><!-- /.sim-left -->
 
-    <!-- ===== COLONNA DESTRA: parametri (setup / riavvio) ===== -->
-    <!-- In fase di setup e' la schermata iniziale (con «Avvia»). Durante la
-         simulazione sta a destra della sandbox, coi parametri modificabili e il
-         tasto «Riavvia» in alto. L'ordine dei blocchi cambia tra le due fasi
-         tramite la proprieta' CSS 'order'. -->
+    <!-- ===== COLONNA DESTRA (in simulazione) / SCHERMATA INIZIALE (in setup) =====
+         Setup: intro + parametri + «Avvia». Simulazione: «Riavvia» in alto, poi
+         forze e impostazioni. Il blocco delle frequenze iniziali vive qui in fase
+         di setup e viene spostato sotto (a piena larghezza) durante la simulazione
+         (vedi setView in main.js). L'ordine dei blocchi cambia via CSS 'order'. -->
     <section id="setupScreen" class="panel setup-panel" aria-label="Parametri della simulazione">
       <div class="setup-intro">
         <h2>Imposta la simulazione</h2>
@@ -134,18 +124,44 @@
       </div>
     </section>
 
-    <!-- ===== SOTTO A TUTTO: Hardy-Weinberg e frequenze genotipiche osservate ===== -->
-    <section class="panel hw-panel" aria-label="Equilibrio di Hardy-Weinberg">
-      <h2>Equilibrio di Hardy-Weinberg</h2>
-      <div id="hwPanel">
-        <p class="hint">Le statistiche di Hardy-Weinberg compariranno qui.</p>
-      </div>
-    </section>
+    <!-- ===== SOTTO A TUTTO (a piena larghezza): frequenze iniziali (spostate qui
+         in simulazione), i due grafici e Hardy-Weinberg. ===== -->
+    <div class="below-section">
+
+      <!-- GRAFICO delle frequenze alleliche nel tempo. -->
+      <section class="panel chart-panel" aria-label="Andamento delle frequenze alleliche">
+        <div class="chart-head">
+          <h2>Frequenze alleliche nel tempo</h2>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chart"></canvas>
+        </div>
+      </section>
+
+      <!-- GRAFICO del numero di individui nel tempo. -->
+      <section class="panel chart-panel" aria-label="Andamento del numero di individui">
+        <div class="chart-head">
+          <h2>Numero di individui nel tempo</h2>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="popChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Scostamento da Hardy-Weinberg + frequenze genotipiche osservate. -->
+      <section class="panel hw-panel" aria-label="Equilibrio di Hardy-Weinberg">
+        <h2>Equilibrio di Hardy-Weinberg</h2>
+        <div id="hwPanel">
+          <p class="hint">Le statistiche di Hardy-Weinberg compariranno qui.</p>
+        </div>
+      </section>
+
+    </div><!-- /.below-section -->
 
   </main>
 
   <footer class="app-footer">
-    <p>PopSim — strumento didattico di genetica di popolazione. Sviluppato da Federico M. Giorgi.</p>
+    <p>PopSim - strumento didattico di genetica di popolazione. Sviluppato da Federico M. Giorgi.</p>
   </footer>
 
   <!-- Moduli ES nativi: nessun bundler, nessuno step di build. -->
