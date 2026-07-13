@@ -2,45 +2,39 @@
 // Fabbrica di individui. Un individuo e' un semplice oggetto dati (nessun
 // metodo), cosi' e' facile da serializzare e da registrare nella cronologia.
 //
-// ESTENSIONE FUTURA (prevista, non ancora implementata): piu' specie che
-// coabitano nella sandbox (es. un predatore). Per questo ogni individuo porta
-// gia' un campo `species` e un contenitore `traits` per caratteristiche
-// specifiche di specie (velocita', dieta, ...). Aggiungere una specie in futuro
-// significhera' creare individui con un altro `species` e un altro set di
-// `traits`, senza riscrivere l'impianto: la popolazione e il renderer trattano
-// gli individui in modo generico.
+// La simulazione si basa su UN SOLO gene, che puo' avere piu' alleli: il
+// genotipo e' quindi una coppia di alleli [a, b] (indici interi).
 
 /**
  * Crea un individuo.
  * @param {object} o
  * @param {number} o.id        identificatore univoco e stabile nel tempo
- * @param {string} o.species   specie (per ora sempre la stessa)
  * @param {string} o.sex       'M' o 'F'
- * @param {number} o.age       eta' in tick (generazioni)
- * @param {Array<[number,number]>} o.genotype  per ogni gene, coppia di alleli
- * @param {number} o.x,o.y     posizione nel mondo
- * @param {number} o.vx,o.vy   velocita' (solo per l'animazione, non influisce
- *                             sulla genetica: lo spazio e' per ora decorativo)
- * @param {object} [o.traits]  caratteristiche specifiche di specie (estensione)
+ * @param {number} o.age       eta' in ANNI
+ * @param {[number,number]} o.genotype  coppia di alleli del gene
+ * @param {number} o.lifespan  durata della vita prevista, in anni
+ * @param {number} [o.F]       coefficiente di consanguineita' (IBD), 0..1
+ * @param {number} [o.mother]  id della madre (0 = fondatore/immigrato)
+ * @param {number} [o.father]  id del padre  (0 = fondatore/immigrato)
+ * @param {number} [o.x],[o.y] posizione nel mondo
  */
 export function createIndividual(o) {
   return {
     id: o.id,
-    species: o.species,
     sex: o.sex,
     age: o.age,
-    genotype: o.genotype,
-    x: o.x,
-    y: o.y,
-    vx: o.vx,
-    vy: o.vy,
-    traits: o.traits || null,
+    genotype: o.genotype,   // [a, b]
+    lifespan: o.lifespan,
+    F: o.F || 0,
+    mother: o.mother || 0,
+    father: o.father || 0,
+    repro: 0,               // quante volte si e' gia' riprodotto
+    x: o.x || 0,
+    y: o.y || 0,
   };
 }
 
-// Numero di loci eterozigoti dell'individuo (utile per il pannello informazioni).
-export function heterozygousLoci(ind) {
-  let h = 0;
-  for (const g of ind.genotype) if (g[0] !== g[1]) h++;
-  return h;
+// Vero se l'individuo e' eterozigote al gene (i due alleli sono diversi).
+export function isHeterozygous(ind) {
+  return ind.genotype[0] !== ind.genotype[1];
 }

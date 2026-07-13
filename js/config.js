@@ -6,69 +6,84 @@
 // per adattarsi allo schermo, ma la simulazione ragiona in queste coordinate.
 export const WORLD = { width: 1000, height: 600 };
 
+// Numero massimo di alleli distinti per il gene. Cap fissato a 9 cosi' che le
+// etichette (A1..A9) restino a una sola cifra e l'ordinamento alfabetico
+// coincida con quello numerico (niente A10/A11/A2...). Sopra 9, le mutazioni
+// non generano piu' nuovi alleli.
+export const MAX_ALLELES = 9;
+
 // Limiti massimi accettati dai controlli di setup.
 export const LIMITS = {
-  maxSize: 10000,       // numero massimo di individui richiesto dalla specifica
-  maxGenes: 6,          // numero massimo di geni
-  maxAlleles: 6,        // numero massimo di alleli per gene
-  maxGenerations: 2000, // numero massimo di generazioni simulabili in blocco
+  maxSize: 1000,       // popolazione massima ("piccola popolazione" didattica)
+  maxAlleles: MAX_ALLELES,
+  maxYears: 10000,     // durata massima della simulazione, in anni (hard cap)
+  maxLife: 100,        // vita media massima impostabile, in anni
 };
 
-// Parametri iniziali di default. Le cinque manopole partono da 0 così che,
-// senza forze attive, la popolazione resti all'equilibrio di Hardy-Weinberg.
+// Parametri iniziali di default. Le forze partono da valori "neutri": con la
+// sola mortalita' = 1 la popolazione resta all'incirca costante ed evolve per
+// pura deriva genetica (ottimo esperimento di partenza in una piccola popolazione).
 export const DEFAULTS = {
-  size: 100,
-  nGenes: 2,
-  nAlleles: 2,
-  generations: 100,  // numero di generazioni da simulare in blocco
+  size: 50,          // numero iniziale di individui
+  nAlleles: 2,       // alleli presenti all'avvio
+  years: 1000,       // durata della simulazione, in anni
+  meanLife: 10,      // vita media di un individuo, in anni
   seed: 12345,
   knobs: {
-    drift: 0,      // deriva genetica
-    mutation: 0,   // mutazione
-    migration: 0,  // migrazione
-    selection: 0,  // selezione
-    mating: 0,     // accoppiamento non casuale
+    mortality: 1,    // morti per ogni nato (1 = popolazione costante)
+    mutation: 0,     // genera nuovi alleli nel tempo
+    selection: 0,    // vantaggio di sopravvivenza per l'allele A1
+    migration: 0,    // ingresso di immigranti non imparentati
   },
 };
 
-// Le manopole nell'interfaccia vanno da 0 a 1 (adimensionali, facili da capire).
-// Qui definiamo come 1 viene tradotto nel parametro biologico corrispondente.
-// I valori sono volutamente "esagerati" rispetto alla realtà per rendere gli
-// effetti visibili nell'arco di poche generazioni, come serve in aula.
+// Traduzione delle manopole (valore adimensionale) nel parametro biologico.
+// I valori sono volutamente "esagerati" per rendere gli effetti visibili in
+// pochi anni, come serve in aula.
 export const SCALES = {
-  mutationMax: 0.05,   // tasso di mutazione massimo per allele per generazione
-  migrationMax: 0.5,   // frazione massima di rimpiazzo per migrazione
-  selectionMax: 0.6,   // coefficiente di selezione massimo a favore dell'allele 1
+  mutationMax: 0.02,   // probabilita' massima di mutazione per allele trasmesso
+  selectionMax: 0.5,   // svantaggio massimo di mortalita' per gli alleli diversi da A1
+  migrationMax: 0.5,   // frazione massima di nuovi nati sostituiti da immigranti
 };
 
-// Ciclo vitale degli individui (in "tick" = generazioni).
+// Ciclo vitale: variabilita' della durata della vita attorno alla vita media.
 export const LIFE = {
-  maxAge: 60,          // età oltre la quale la morte è certa
-  baseMortality: 0.01, // mortalità di base anche da giovani
+  lifeVariation: 0.18, // deviazione standard della vita, come frazione della vita media
 };
 
 // Allele favorito dalla selezione direzionale (indice 0 = "A1").
 export const FAVORED_ALLELE = 0;
 
-// Etichette italiane delle cinque manopole (usate nell'interfaccia).
-export const KNOB_LABELS = {
-  drift: 'Deriva genetica',
-  mutation: 'Mutazione',
-  migration: 'Migrazione',
-  selection: 'Selezione',
-  mating: 'Accoppiamento non casuale',
-};
+// Definizione delle manopole (le forze evolutive). Ogni manopola porta con se'
+// il proprio intervallo, cosi' l'interfaccia si costruisce da questi dati.
+export const KNOBS = [
+  {
+    name: 'mortality',
+    label: 'Mortalità',
+    hint: 'Morti per ogni nato: 1 mantiene la popolazione costante, sotto 1 la fa crescere, sopra 1 la fa diminuire.',
+    min: 0, max: 2, step: 0.05, default: DEFAULTS.knobs.mortality,
+  },
+  {
+    name: 'mutation',
+    label: 'Mutazione',
+    hint: 'Probabilità che un allele trasmesso muti in un nuovo allele (fino a un massimo di 9 alleli).',
+    min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.mutation,
+  },
+  {
+    name: 'selection',
+    label: 'Selezione',
+    hint: 'Vantaggio di sopravvivenza a favore dell’allele A1.',
+    min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.selection,
+  },
+  {
+    name: 'migration',
+    label: 'Migrazione',
+    hint: 'Frazione di nuovi nati sostituiti da immigranti non imparentati, con alleli casuali.',
+    min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.migration,
+  },
+];
 
-// Breve descrizione di ogni forza, mostrata come suggerimento nell'interfaccia.
-export const KNOB_HINTS = {
-  drift: 'Fluttuazione casuale delle frequenze: piu forte nelle popolazioni piccole.',
-  mutation: 'Converte alleli in altri alleli, spingendo verso frequenze uniformi.',
-  migration: 'Ingresso di alleli da una popolazione esterna (sorgente uniforme).',
-  selection: 'Vantaggio riproduttivo a favore dell\'allele A1.',
-  mating: 'Accoppiamento tra simili: produce eccesso di omozigoti (F > 0).',
-};
-
-// Tavolozza di colori per gli alleli (fino a 6). Scelti per essere distinguibili.
+// Tavolozza di colori per gli alleli (fino a 9). Scelti per essere distinguibili.
 // Lo stesso colore identifica un allele sia nella sandbox sia nel grafico.
 export const ALLELE_COLORS = [
   '#4e79a7', // A1 blu
@@ -77,7 +92,10 @@ export const ALLELE_COLORS = [
   '#e15759', // A4 rosso
   '#b07aa1', // A5 viola
   '#edc948', // A6 giallo
+  '#76b7b2', // A7 turchese
+  '#ff9da7', // A8 rosa
+  '#9c755f', // A9 marrone
 ];
 
-// Etichetta leggibile per un allele (A1, A2, ...).
+// Etichetta leggibile per un allele (A1, A2, ...). Con il cap a 9 resta a una cifra.
 export function alleleLabel(i) { return 'A' + (i + 1); }

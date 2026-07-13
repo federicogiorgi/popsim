@@ -2,10 +2,10 @@
 // Il "direttore d'orchestra": collega modello, renderer e interfaccia.
 //
 // Flusso dell'applicazione:
-//   1. SCHERMATA DI SETUP: l'utente sceglie i parametri iniziali e le cinque
-//      forze, poi preme «Avvia».
-//   2. GENERAZIONE IN BLOCCO: tutte le generazioni richieste vengono simulate e
-//      registrate, mostrando "Simulazione evolutiva in corso…".
+//   1. SCHERMATA DI SETUP: l'utente sceglie i parametri iniziali e le forze,
+//      poi preme «Avvia».
+//   2. GENERAZIONE IN BLOCCO: tutti gli anni richiesti vengono simulati e
+//      registrati, mostrando "Simulazione evolutiva in corso…".
 //   3. NAVIGAZIONE: la simulazione registrata diventa navigabile con la barra
 //      temporale (play/pausa, cursore, barra spaziatrice). I parametri restano
 //      in fondo alla pagina; «Riavvia» rigenera tutto.
@@ -36,9 +36,8 @@ const state = {
   recorder: null,
   generating: false, // true durante la generazione in blocco
   playing: false,    // true durante la riproduzione
-  cursor: 0,         // generazione attualmente mostrata
-  speed: 6,          // generazioni al secondo in riproduzione
-  selectedGene: 0,
+  cursor: 0,         // anno attualmente mostrato
+  speed: 6,          // anni al secondo in riproduzione
   selectedId: null,  // individuo selezionato (per la scheda info)
 };
 
@@ -47,16 +46,14 @@ const controls = new Controls(
   {
     knobsContainer: $('knobs'),
     sizeInput: $('cfgSize'),
-    generationsInput: $('cfgGenerations'),
-    genesInput: $('cfgGenes'),
+    yearsInput: $('cfgYears'),
+    lifeInput: $('cfgLife'),
     allelesInput: $('cfgAlleles'),
     seedInput: $('cfgSeed'),
     speedInput: $('speed'),
     speedLabel: $('speedLabel'),
-    geneSelect: $('geneSelect'),
   },
   {
-    onGeneChange: (idx) => { state.selectedGene = idx; forceRedraw(); renderNow(); },
     onSpeed: (v) => { state.speed = v; },
   }
 );
@@ -96,10 +93,8 @@ async function run(config) {
   if (state.generating) return;
   state.config = config;
   setView('sim');
-  state.selectedGene = 0;
   state.selectedId = null;
   setInfoVisible(false);
-  controls.populateGenes(config.nGenes, 0);
 
   // Attende un frame perche' i canvas, ora visibili, abbiano dimensioni reali.
   await nextFrame();
@@ -109,28 +104,30 @@ async function run(config) {
   await generate(config);
 
   state.cursor = 0;
-  state.playing = true; // parte in riproduzione dalla generazione 0
+  state.playing = true; // parte in riproduzione dall'anno 0
   forceRedraw();
   render(); // primo fotogramma subito, senza attendere il ciclo di animazione
 }
 
-// Genera tutte le generazioni, a blocchi, aggiornando la barra di avanzamento.
+// Genera tutti gli anni, a blocchi, aggiornando la barra di avanzamento.
 async function generate(config) {
   state.generating = true;
-  showGenerating(true, 0, config.generations);
+  showGenerating(true, 0, config.years);
 
   state.pop = new Population(config);
   state.recorder = new Recorder();
-  state.recorder.record(state.pop.stats(), state.pop.snapshot()); // generazione 0
+  state.recorder.record(state.pop.stats(), state.pop.snapshot()); // anno 0
 
-  const total = config.generations;
-  // Dimensione del blocco: piu' piccola se ci sono tanti individui, cosi' ogni
-  // pausa per aggiornare l'interfaccia resta breve e l'animazione non scatta.
-  const chunk = Math.max(1, Math.min(25, Math.round(300000 / (config.size * Math.max(1, config.nGenes)))));
+  const total = config.years;
+  const chunk = Math.max(1, Math.min(25, Math.round(300000 / Math.max(1, config.size))));
 
   for (let g = 1; g <= total; g++) {
     state.pop.step();
     state.recorder.record(state.pop.stats(), state.pop.snapshot());
+    if (state.pop.individuals.length === 0) { // estinzione: si ferma
+      showGenerating(true, g, total);
+      break;
+    }
     if (g % chunk === 0 || g === total) {
       showGenerating(true, g, total);
       await nextFrame(); // cede il controllo: l'overlay si aggiorna, niente freeze
@@ -159,7 +156,6 @@ let lastKey = '';
 function togglePlay() {
   if (!state.recorder || state.generating) return;
   const last = state.recorder.length - 1;
-  // Se siamo alla fine e si preme play, riparte dall'inizio.
   if (!state.playing && state.cursor >= last) state.cursor = 0;
   state.playing = !state.playing;
   forceRedraw();
@@ -186,8 +182,6 @@ function loop(now) {
 
 function forceRedraw() { lastKey = ''; }
 
-// Ridisegna subito (senza attendere il prossimo frame del ciclo di animazione):
-// usato dopo le interazioni dell'utente per una risposta immediata.
 function renderNow() {
   if (state.recorder && !state.generating) render();
 }
@@ -197,26 +191,24 @@ function render() {
   const cursor = state.cursor;
 
   const { snap } = state.recorder.snapAt(cursor);
-  if (snap) sandbox.drawSnapshot(snap, state.selectedGene, state.selectedId);
+  if (snap) sandbox.drawSnapshot(snap, state.selectedId);
 
   // I pannelli piu' "pesanti" si aggiornano solo quando qualcosa cambia.
-  const key = cursor + '|' + last + '|' + state.selectedGene + '|' +
-    state.selectedId + '|' + state.playing;
+  const key = cursor + '|' + last + '|' + state.selectedId + '|' + state.playing;
   if (key !== lastKey) {
     lastKey = key;
-    chart.draw(state.recorder.frames, state.selectedGene, cursor, state.pop.nAlleles);
-    const stats = state.recorder.statsAt(cursor);
-    hwPanel.render(stats.perGene[state.selectedGene], state.selectedGene);
-    updateInfo(stats, cursor);
+    chart.draw(state.recorder.frames, cursor);
+    hwPanel.render(state.recorder.statsAt(cursor));
+    updateInfo(cursor);
     timeline.update(cursor, last, state.playing);
   }
 }
 
-function updateInfo(stats, cursor) {
+function updateInfo(cursor) {
   if (state.selectedId == null) { setInfoVisible(false); return; }
   const { snap } = state.recorder.snapAt(cursor);
   const person = snap ? personFromSnapshot(snap, state.selectedId) : null;
-  infoPanel.show(person, stats, !!person);
+  infoPanel.show(person, !!person);
   setInfoVisible(true);
 }
 
@@ -253,9 +245,7 @@ if (window.ResizeObserver) {
   ro.observe(chartCanvas);
 }
 
-// Cede il controllo al browser per un istante. Si sblocca con il primo tra
-// requestAnimationFrame e un breve timeout: cosi' la generazione procede anche
-// se la scheda e' in secondo piano (dove rAF puo' essere sospeso).
+// Cede il controllo al browser per un istante.
 function nextFrame() {
   return new Promise((resolve) => {
     let done = false;

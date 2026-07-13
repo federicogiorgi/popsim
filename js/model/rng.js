@@ -52,10 +52,20 @@ export class RNG {
   }
 
   // Numero da distribuzione normale (metodo di Box-Muller).
-  // Serve per l'approssimazione normale del campionamento binomiale.
+  // Serve, ad esempio, per estrarre la durata della vita attorno alla media.
   gaussian(mean = 0, std = 1) {
     const u = 1 - this.next();
     const v = this.next();
     return mean + std * Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+
+  // Mescola un array sul posto (algoritmo di Fisher-Yates). Usato per formare
+  // le coppie di accoppiamento e per disporre i gruppi nello spazio.
+  shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = this.int(i + 1);
+      const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+    }
+    return arr;
   }
 }

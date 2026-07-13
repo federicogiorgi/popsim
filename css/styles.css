@@ -241,14 +241,6 @@ body {
   flex-wrap: wrap;
   gap: 8px;
 }
-.gene-select { font-size: 0.85rem; color: var(--muted); display: inline-flex; gap: 6px; align-items: center; }
-.gene-select select {
-  padding: 4px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--panel);
-  color: var(--ink);
-}
 .chart-wrap {
   width: 100%;
   aspect-ratio: 1000 / 300;

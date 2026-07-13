@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PopSim — Genetica di Popolazione</title>
-  <meta name="description" content="Simulatore didattico di genetica di popolazione: deriva, mutazione, migrazione, selezione, accoppiamento non casuale ed equilibrio di Hardy-Weinberg." />
+  <meta name="description" content="Simulatore didattico di genetica di popolazione: individui che nascono, si accoppiano e muoiono, deriva, mutazione, migrazione, selezione, consanguineità ed equilibrio di Hardy-Weinberg." />
   <!-- Percorsi relativi: il sito vive nel sottopercorso /popsim/. -->
   <link rel="stylesheet" href="css/styles.css" />
 </head>
@@ -45,7 +45,7 @@
         <p class="legend">
           <span class="lg"><span class="lg-shape circle"></span> femmina</span>
           <span class="lg"><span class="lg-shape square"></span> maschio</span>
-          <span class="lg muted">colore = genotipo al gene selezionato · clicca un individuo</span>
+          <span class="lg muted">colore = alleli (metà per allele negli eterozigoti) · clicca un individuo</span>
         </p>
       </section>
 
@@ -54,9 +54,9 @@
       <section class="panel transport" aria-label="Controllo del tempo">
         <div class="transport-controls">
           <button id="playBtn" class="play-btn" aria-label="Play">▶ Play</button>
-          <span id="timeLabel" class="time-label">Generazione 0 / 0</span>
+          <span id="timeLabel" class="time-label">Anno 0 / 0</span>
           <label class="speed-ctrl">
-            Velocita'
+            Velocità
             <input id="speed" type="range" min="1" max="60" step="1" value="6" />
             <span id="speedLabel">6×</span>
           </label>
@@ -71,10 +71,6 @@
       <section class="panel chart-panel" aria-label="Andamento delle frequenze alleliche">
         <div class="chart-head">
           <h2>Frequenze alleliche nel tempo</h2>
-          <label class="gene-select">
-            Gene mostrato
-            <select id="geneSelect"></select>
-          </label>
         </div>
         <div class="chart-wrap">
           <canvas id="chart"></canvas>
@@ -98,31 +94,33 @@
       <div class="setup-intro">
         <h2>Imposta la simulazione</h2>
         <p class="hint">
-          Regola i parametri iniziali e le cinque forze, poi premi «Avvia».
-          Con tutte le forze a 0 la popolazione resta all'equilibrio di Hardy-Weinberg.
+          La simulazione si basa su un solo gene (con più alleli possibili). Gli
+          individui nascono, si accoppiano e muoiono, anno dopo anno. Regola i
+          parametri iniziali e le forze, poi premi «Avvia». Con la sola mortalità = 1
+          la popolazione resta all'incirca costante ed evolve per pura deriva.
         </p>
       </div>
 
       <h3 class="group-title">Impostazioni iniziali</h3>
       <div class="setup-grid">
         <label>N. individui
-          <input id="cfgSize" type="number" min="2" max="10000" step="1" />
+          <input id="cfgSize" type="number" min="2" max="1000" step="1" />
         </label>
-        <label>N. generazioni
-          <input id="cfgGenerations" type="number" min="1" max="2000" step="1" />
+        <label>Durata (anni)
+          <input id="cfgYears" type="number" min="1" max="10000" step="1" />
         </label>
-        <label>N. geni
-          <input id="cfgGenes" type="number" min="1" max="6" step="1" />
+        <label>Vita media (anni)
+          <input id="cfgLife" type="number" min="3" max="100" step="1" />
         </label>
-        <label>Alleli per gene
-          <input id="cfgAlleles" type="number" min="2" max="6" step="1" />
+        <label>Alleli iniziali
+          <input id="cfgAlleles" type="number" min="2" max="9" step="1" />
         </label>
         <label>Seme casuale
           <input id="cfgSeed" type="number" step="1" />
         </label>
       </div>
 
-      <h3 class="group-title">Le cinque forze</h3>
+      <h3 class="group-title">Forze evolutive</h3>
       <div id="knobs" class="knobs"></div>
 
       <div class="setup-actions">

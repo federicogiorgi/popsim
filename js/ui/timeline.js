@@ -32,8 +32,8 @@ export class Timeline {
   }
 
   // Aggiorna lo stato visivo della barra.
-  //   cursor  : tempo corrente
-  //   live    : ultimo tempo simulato (massimo del cursore)
+  //   cursor  : anno corrente
+  //   live    : ultimo anno simulato (massimo del cursore)
   //   playing : true se in riproduzione
   update(cursor, live, playing) {
     this.slider.max = String(Math.max(0, live));
@@ -43,6 +43,6 @@ export class Timeline {
     }
     this.playBtn.textContent = playing ? '⏸ Pausa' : '▶ Play';
     this.playBtn.setAttribute('aria-label', playing ? 'Pausa' : 'Play');
-    this.timeLabel.textContent = 'Generazione ' + cursor + ' / ' + live;
+    this.timeLabel.textContent = 'Anno ' + cursor + ' / ' + live;
   }
 }
