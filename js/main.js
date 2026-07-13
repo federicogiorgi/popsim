@@ -14,6 +14,7 @@ import { Population } from './model/population.js';
 import { Recorder } from './recorder.js';
 import { SandboxRenderer } from './render/sandbox.js';
 import { FrequencyChart } from './ui/chart.js';
+import { PopChart } from './ui/popChart.js';
 import { Controls } from './ui/controls.js';
 import { Timeline } from './ui/timeline.js';
 import { HWPanel } from './ui/hwPanel.js';
@@ -24,9 +25,11 @@ const $ = (id) => document.getElementById(id);
 
 const sandboxCanvas = $('sandbox');
 const chartCanvas = $('chart');
+const popChartCanvas = $('popChart');
 const sandbox = new SandboxRenderer(sandboxCanvas);
 sandbox.world = { width: WORLD.width, height: WORLD.height };
 const chart = new FrequencyChart(chartCanvas);
+const popChart = new PopChart(popChartCanvas);
 const hwPanel = new HWPanel($('hwPanel'));
 const infoPanel = new InfoPanel($('infoPanel'));
 
@@ -101,6 +104,7 @@ async function run(config) {
   await nextFrame();
   sandbox.resize();
   chart.resize();
+  popChart.resize();
 
   await generate(config);
 
@@ -198,10 +202,12 @@ function render() {
   const key = cursor + '|' + last + '|' + state.selectedId + '|' + state.playing;
   if (key !== lastKey) {
     lastKey = key;
+    const stats = state.recorder.statsAt(cursor);
     chart.draw(state.recorder.frames, cursor);
-    hwPanel.render(state.recorder.statsAt(cursor));
+    popChart.draw(state.recorder.frames, cursor);
+    hwPanel.render(stats);
     updateInfo(cursor);
-    timeline.update(cursor, last, state.playing);
+    timeline.update(cursor, last, state.playing, stats.size);
   }
 }
 
@@ -236,6 +242,7 @@ function handleResize() {
   if (document.body.classList.contains('view-setup')) return;
   sandbox.resize();
   chart.resize();
+  popChart.resize();
   forceRedraw();
   if (state.recorder && !state.generating) render();
 }
@@ -244,6 +251,7 @@ if (window.ResizeObserver) {
   const ro = new ResizeObserver(() => handleResize());
   ro.observe(sandboxCanvas);
   ro.observe(chartCanvas);
+  ro.observe(popChartCanvas);
 }
 
 // Cede il controllo al browser per un istante.

@@ -35,7 +35,8 @@ export class Timeline {
   //   cursor  : anno corrente
   //   live    : ultimo anno simulato (massimo del cursore)
   //   playing : true se in riproduzione
-  update(cursor, live, playing) {
+  //   size    : numero di individui vivi nell'anno corrente
+  update(cursor, live, playing, size) {
     this.slider.max = String(Math.max(0, live));
     // Aggiorna il valore solo se diverso, per non "combattere" col trascinamento.
     if (document.activeElement !== this.slider) {
@@ -43,6 +44,8 @@ export class Timeline {
     }
     this.playBtn.textContent = playing ? '⏸ Pausa' : '▶ Play';
     this.playBtn.setAttribute('aria-label', playing ? 'Pausa' : 'Play');
-    this.timeLabel.textContent = 'Anno ' + cursor + ' / ' + live;
+    let txt = 'Anno ' + cursor + ' / ' + live;
+    if (size != null) txt += '   ·   ' + size + ' individui';
+    this.timeLabel.textContent = txt;
   }
 }

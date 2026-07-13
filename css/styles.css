@@ -78,26 +78,34 @@ body {
 }
 
 /* --- Layout DESKTOP a due colonne (in simulazione) -----------------------
-   A sinistra: sandbox, barra del tempo e grafico. A destra: i parametri
-   (larghi circa 3/5 della colonna sinistra: 5fr contro 3fr). Sotto a tutto,
-   a piena larghezza, il pannello di Hardy-Weinberg. Sotto i 900px si torna a
-   una singola colonna (impilata). */
+   Riga in alto: a sinistra la sandbox + la barra del tempo; a destra i parametri
+   (larghi circa 3/5 della colonna sinistra: 5fr contro 3fr). La sandbox si
+   allunga per pareggiare l'altezza della colonna dei parametri. Sotto, a piena
+   larghezza, i due grafici e Hardy-Weinberg. Sotto i 900px si torna a una
+   singola colonna (impilata). */
 .sim-left { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.below-section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 
 @media (min-width: 900px) {
   body.view-sim .app {
-    max-width: 1440px;
+    max-width: 1400px;
     display: grid;
     grid-template-columns: 5fr 3fr;
     grid-template-areas:
-      "left params"
-      "hw   hw";
-    align-items: start;
+      "left  params"
+      "below below";
+    align-items: stretch;
     column-gap: 16px;
   }
   body.view-sim .sim-left { grid-area: left; }
-  body.view-sim #setupScreen { grid-area: params; }
-  body.view-sim .hw-panel { grid-area: hw; }
+  /* I parametri definiscono l'altezza della riga; si dimensionano al contenuto. */
+  body.view-sim #setupScreen { grid-area: params; align-self: start; }
+  body.view-sim .below-section { grid-area: below; }
+
+  /* La sandbox riempie l'altezza disponibile, cosi' che sandbox + barra del
+     tempo pareggino l'altezza del pannello dei parametri. */
+  body.view-sim .sandbox-panel { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+  body.view-sim .sandbox-wrap { flex: 1 1 auto; aspect-ratio: auto; min-height: 320px; }
 }
 
 .panel {
@@ -120,7 +128,7 @@ body {
 /* In setup: si vede solo il pannello dei parametri. In simulazione: si vede
    tutto, e il pannello dei parametri resta in fondo (ordine del DOM). */
 .view-setup .sim-left { display: none; }
-.view-setup .hw-panel { display: none; }
+.view-setup .below-section { display: none; }
 .view-setup #restartBtn { display: none; }
 .view-sim #startBtn { display: none; }
 .view-setup .setup-intro { display: block; }
@@ -154,7 +162,10 @@ body {
   border-radius: 10px;
   overflow: hidden;
 }
-#sandbox { width: 100%; height: 100%; display: block; cursor: pointer; }
+/* Il canvas e' in posizione assoluta cosi' la sua risoluzione interna non
+   influisce sul calcolo dell'altezza del contenitore (evita un ciclo di
+   feedback quando l'altezza della sandbox e' determinata dal layout flex). */
+#sandbox { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: pointer; }
 
 /* Overlay "simulazione in corso" sopra la sandbox. */
 .gen-overlay {
@@ -286,7 +297,12 @@ body {
   aspect-ratio: 1000 / 300;
   min-height: 160px;
 }
-#chart { width: 100%; height: 100%; display: block; }
+/* In fondo, a piena larghezza, i grafici userebbero troppa altezza con
+   l'aspect-ratio: fissiamo un'altezza contenuta. */
+@media (min-width: 900px) {
+  body.view-sim .below-section .chart-wrap { aspect-ratio: auto; height: 240px; }
+}
+#chart, #popChart { width: 100%; height: 100%; display: block; }
 
 /* --- Hardy-Weinberg ------------------------------------------------------- */
 .hw-head { font-weight: 600; margin-bottom: 6px; }
