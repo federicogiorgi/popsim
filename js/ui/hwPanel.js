@@ -17,9 +17,10 @@ export class HWPanel {
     this.el = container;
   }
 
-  // stats    : oggetto restituito da Population.stats()
-  // freqInfo : { changing, delta, window } sull'andamento delle frequenze nel tempo
-  render(stats, freqInfo) {
+  // stats      : oggetto restituito da Population.stats()
+  // freqInfo   : { changing, delta, window } sull'andamento delle frequenze nel tempo
+  // matingKnob : valore della manopola "accoppiamento non casuale" (0..1)
+  render(stats, freqInfo, matingKnob = 0) {
     const hw = stats.hw;
     const obs = hw.p;
 
@@ -46,7 +47,12 @@ export class HWPanel {
       reasons.push('le frequenze alleliche stanno cambiando');
       cls = 'warn';
     }
-    if (p < 0.05) {
+    // Le proporzioni genotipiche sono alterate SOLO dall'accoppiamento non
+    // casuale (le altre forze campionano comunque in proporzioni di HW). Percio'
+    // segnaliamo lo scostamento genotipico solo quando quella manopola e' attiva:
+    // altrimenti un chi-quadro significativo e' solo rumore campionario (con
+    // popolazioni piccole capita nel ~5% dei casi anche ad accoppiamento casuale).
+    if (matingKnob > 0 && p < 0.05) {
       reasons.push('proporzioni genotipiche alterate (accoppiamento non casuale)');
       cls = p < 0.01 ? 'bad' : 'warn';
     }

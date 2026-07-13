@@ -218,7 +218,7 @@ function render() {
     const stats = state.recorder.statsAt(cursor);
     chart.draw(state.recorder.frames, cursor);
     popChart.draw(state.recorder.frames, cursor);
-    hwPanel.render(stats, freqTrend(cursor));
+    hwPanel.render(stats, freqTrend(cursor), state.config.knobs.mating);
     updateInfo(cursor);
     timeline.update(cursor, last, state.playing, stats.size);
   }
