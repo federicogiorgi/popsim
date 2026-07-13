@@ -195,8 +195,21 @@ function render() {
   const last = state.recorder.length - 1;
   const cursor = state.cursor;
 
-  const { snap } = state.recorder.snapAt(cursor);
-  if (snap) sandbox.drawSnapshot(snap, state.selectedId);
+  // Animazione fluida: durante il play interpola le posizioni tra l'anno corrente
+  // e il successivo (acc = frazione accumulata dal ciclo di riproduzione). In
+  // pausa o durante lo scrubbing (f = 0) si disegna il fotogramma esatto.
+  const f = (state.playing && cursor < last) ? Math.min(1, acc) : 0;
+  const cur = state.recorder.snapAt(cursor);
+  if (f > 0) {
+    const nxt = state.recorder.snapAt(cursor + 1);
+    if (cur.snap && cur.exact && nxt.snap && nxt.exact && nxt.snap !== cur.snap) {
+      sandbox.drawInterpolated(cur.snap, nxt.snap, f, state.selectedId);
+    } else if (cur.snap) {
+      sandbox.drawSnapshot(cur.snap, state.selectedId);
+    }
+  } else if (cur.snap) {
+    sandbox.drawSnapshot(cur.snap, state.selectedId);
+  }
 
   // I pannelli piu' "pesanti" si aggiornano solo quando qualcosa cambia.
   const key = cursor + '|' + last + '|' + state.selectedId + '|' + state.playing;

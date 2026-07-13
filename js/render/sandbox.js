@@ -50,37 +50,91 @@ export class SandboxRenderer {
     return 9;
   }
 
-  // Disegna una scena a partire da uno SNAPSHOT.
-  drawSnapshot(snap, selectedId) {
+  // Mappa id -> indice per uno snapshot, calcolata una sola volta e messa in
+  // cache sull'oggetto snapshot (serve all'interpolazione tra due anni).
+  _idMap(snap) {
+    if (!snap._idMap) {
+      const m = new Map();
+      for (let i = 0; i < snap.n; i++) m.set(snap.id[i], i);
+      snap._idMap = m;
+    }
+    return snap._idMap;
+  }
+
+  _clear() {
     const ctx = this.ctx;
     ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     ctx.clearRect(0, 0, this.cssWidth, this.cssHeight);
+  }
 
+  // Disegna una scena a partire da UNO snapshot (uso normale: pausa, scrubbing).
+  drawSnapshot(snap, selectedId) {
+    this._clear();
     const r = this._radiusFor(snap.n);
     let selected = null;
-
     for (let i = 0; i < snap.n; i++) {
       const [px, py] = this._worldToCss(snap.x[i], snap.y[i]);
-      const female = snap.sex[i] === 1;
-      const a = snap.a[i];
-      const b = snap.b[i];
-      const lo = Math.min(a, b);
-      const hi = Math.max(a, b);
-      this._drawSymbol(px, py, r, female, this._color(lo), this._color(hi), lo === hi);
+      this._paint(px, py, r, snap.sex[i] === 1, snap.a[i], snap.b[i], 1);
       if (selectedId != null && snap.id[i] === selectedId) selected = { px, py };
     }
+    this._ring(selected, r);
+  }
 
-    if (selected) {
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = '#111';
-      ctx.beginPath();
-      ctx.arc(selected.px, selected.py, r + 5, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.strokeStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(selected.px, selected.py, r + 7, 0, Math.PI * 2);
-      ctx.stroke();
+  // Disegna una scena INTERPOLATA tra due anni consecutivi (a = anno t,
+  // b = anno t+1) con frazione f in [0,1]. Gli individui presenti in entrambi
+  // scivolano dalla vecchia alla nuova posizione; i nuovi nati compaiono in
+  // dissolvenza; chi muore sparisce in dissolvenza. Serve solo per rendere
+  // fluida la riproduzione: non tocca in alcun modo il calcolo della simulazione.
+  drawInterpolated(a, b, f, selectedId) {
+    this._clear();
+    const r = this._radiusFor(Math.max(a.n, b.n));
+    const mapA = this._idMap(a);
+    const mapB = this._idMap(b);
+    let selected = null;
+
+    // Individui presenti nell'anno t+1: persistenti (interpolati) o nati (fade-in).
+    for (let i = 0; i < b.n; i++) {
+      const id = b.id[i];
+      const ja = mapA.get(id);
+      let wx, wy, alpha;
+      if (ja !== undefined) {
+        wx = a.x[ja] + (b.x[i] - a.x[ja]) * f;
+        wy = a.y[ja] + (b.y[i] - a.y[ja]) * f;
+        alpha = 1;
+      } else {
+        wx = b.x[i]; wy = b.y[i]; alpha = f; // nuovo nato: compare gradualmente
+      }
+      const [px, py] = this._worldToCss(wx, wy);
+      this._paint(px, py, r, b.sex[i] === 1, b.a[i], b.b[i], alpha);
+      if (selectedId != null && id === selectedId) selected = { px, py };
     }
+
+    // Individui morti tra t e t+1 (presenti solo in t): svaniscono sul posto.
+    for (let i = 0; i < a.n; i++) {
+      const id = a.id[i];
+      if (mapB.has(id)) continue;
+      const [px, py] = this._worldToCss(a.x[i], a.y[i]);
+      this._paint(px, py, r, a.sex[i] === 1, a.a[i], a.b[i], 1 - f);
+      if (selectedId != null && id === selectedId && !selected) selected = { px, py };
+    }
+
+    this._ring(selected, r);
+  }
+
+  // Evidenzia l'individuo selezionato con un anello ben visibile.
+  _ring(selected, r) {
+    if (!selected) return;
+    const ctx = this.ctx;
+    ctx.globalAlpha = 1;
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#111';
+    ctx.beginPath();
+    ctx.arc(selected.px, selected.py, r + 5, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(selected.px, selected.py, r + 7, 0, Math.PI * 2);
+    ctx.stroke();
   }
 
   // Traccia il contorno della forma (cerchio o quadrato) attorno a (px, py).
@@ -89,6 +143,16 @@ export class SandboxRenderer {
     ctx.beginPath();
     if (female) ctx.arc(px, py, r, 0, Math.PI * 2);
     else ctx.rect(px - r, py - r, r * 2, r * 2);
+  }
+
+  // Disegna un individuo con una data opacita', scegliendo i colori dai suoi
+  // due alleli (ordine alfabetico) e la forma dal sesso.
+  _paint(px, py, r, female, alleleA, alleleB, alpha) {
+    const lo = Math.min(alleleA, alleleB);
+    const hi = Math.max(alleleA, alleleB);
+    this.ctx.globalAlpha = alpha;
+    this._drawSymbol(px, py, r, female, this._color(lo), this._color(hi), lo === hi);
+    this.ctx.globalAlpha = 1;
   }
 
   // Disegna un individuo. Se omozigote: tinta unita c1. Se eterozigote: due
