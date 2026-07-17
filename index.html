@@ -9,13 +9,17 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <link rel="stylesheet" href="css/styles.css?v=3" />
+  <link rel="stylesheet" href="css/styles.css?v=4" />
 </head>
 <!-- La classe su <body> commuta tra le due schermate: setup e simulazione. -->
 <body class="view-setup">
   <header class="app-header">
-    <h1>PopSim</h1>
-    <p class="subtitle">Simulatore di genetica di popolazione</p>
+    <!-- Cliccando il titolo si ricarica il sito (percorso relativo): si torna alla
+         schermata iniziale con i parametri reimpostati ai valori di default. -->
+    <a class="app-home" href="./" title="Torna alla schermata iniziale (reimposta i parametri)">
+      <h1>PopSim</h1>
+      <p class="subtitle">Simulatore di genetica di popolazione</p>
+    </a>
   </header>
 
   <main class="app">

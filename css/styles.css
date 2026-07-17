@@ -66,6 +66,17 @@ body {
 .app-header h1 { margin: 0; font-size: 1.5rem; letter-spacing: 0.5px; }
 .subtitle { margin: 2px 0 0; color: var(--muted); font-size: 0.9rem; }
 
+/* Il titolo e' un link alla home: cliccandolo si ricarica e si azzerano i parametri. */
+.app-home {
+  display: inline-block;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+.app-home:hover h1 { color: var(--accent); }
+.app-home:hover { opacity: 0.92; }
+
 /* Contenitore principale: una colonna, larghezza massima per non "sparpagliare"
    il contenuto sui monitor grandi. */
 .app {
