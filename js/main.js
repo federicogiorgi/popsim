@@ -15,6 +15,7 @@ import { Recorder } from './recorder.js';
 import { SandboxRenderer } from './render/sandbox.js';
 import { FrequencyChart } from './ui/chart.js';
 import { PopChart } from './ui/popChart.js';
+import { GenotypeChart } from './ui/genoChart.js';
 import { Controls } from './ui/controls.js';
 import { Timeline } from './ui/timeline.js';
 import { HWPanel } from './ui/hwPanel.js';
@@ -26,10 +27,12 @@ const $ = (id) => document.getElementById(id);
 const sandboxCanvas = $('sandbox');
 const chartCanvas = $('chart');
 const popChartCanvas = $('popChart');
+const genoChartCanvas = $('genoChart');
 const sandbox = new SandboxRenderer(sandboxCanvas);
 sandbox.world = { width: WORLD.width, height: WORLD.height };
 const chart = new FrequencyChart(chartCanvas);
 const popChart = new PopChart(popChartCanvas);
+const genoChart = new GenotypeChart(genoChartCanvas, $('genoLegend'));
 const hwPanel = new HWPanel($('hwPanel'));
 const infoPanel = new InfoPanel($('infoPanel'));
 
@@ -104,6 +107,7 @@ async function run(config) {
   await nextFrame();
   sandbox.resize();
   chart.resize();
+  genoChart.resize();
   popChart.resize();
 
   await generate(config);
@@ -224,6 +228,7 @@ function render() {
     lastKey = key;
     const stats = state.recorder.statsAt(cursor);
     chart.draw(state.recorder.frames, cursor);
+    genoChart.draw(state.recorder.frames, cursor);
     popChart.draw(state.recorder.frames, cursor);
     hwPanel.render(stats, freqTrend(cursor), state.config.knobs.mating);
     updateInfo(cursor);
@@ -276,6 +281,7 @@ function handleResize() {
   if (document.body.classList.contains('view-setup')) return;
   sandbox.resize();
   chart.resize();
+  genoChart.resize();
   popChart.resize();
   forceRedraw();
   if (state.recorder && !state.generating) render();
@@ -285,6 +291,7 @@ if (window.ResizeObserver) {
   const ro = new ResizeObserver(() => handleResize());
   ro.observe(sandboxCanvas);
   ro.observe(chartCanvas);
+  ro.observe(genoChartCanvas);
   ro.observe(popChartCanvas);
 }
 

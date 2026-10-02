@@ -313,7 +313,11 @@ body {
 @media (min-width: 900px) {
   body.view-sim .below-section .chart-wrap { aspect-ratio: auto; height: 240px; }
 }
-#chart, #popChart { width: 100%; height: 100%; display: block; }
+#chart, #genoChart, #popChart { width: 100%; height: 100%; display: block; }
+/* Legenda HTML dei grafici (es. genotipi): a destra del titolo, va a capo. */
+.chart-legend { margin: 0; gap: 10px; }
+.lg-line { width: 18px; height: 0; border-top: 2px solid var(--ink); display: inline-block; }
+.lg-line.thin { border-top-width: 1px; opacity: 0.5; }
 
 /* --- Hardy-Weinberg ------------------------------------------------------- */
 .hw-head { font-weight: 600; margin-bottom: 6px; }

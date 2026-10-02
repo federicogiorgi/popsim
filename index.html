@@ -9,7 +9,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <link rel="stylesheet" href="css/styles.css?v=5" />
+  <link rel="stylesheet" href="css/styles.css?v=6" />
 </head>
 <!-- La classe su <body> commuta tra le due schermate: setup e simulazione. -->
 <body class="view-setup">
@@ -142,6 +142,18 @@
         </div>
         <div class="chart-wrap">
           <canvas id="chart"></canvas>
+        </div>
+      </section>
+
+      <!-- GRAFICO delle frequenze genotipiche nel tempo: osservate (spesse) e
+           attese sotto Hardy-Weinberg (sottili). Legenda in HTML sopra il canvas. -->
+      <section class="panel chart-panel" aria-label="Andamento delle frequenze genotipiche">
+        <div class="chart-head">
+          <h2>Frequenze genotipiche nel tempo</h2>
+          <p id="genoLegend" class="legend chart-legend"></p>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="genoChart"></canvas>
         </div>
       </section>
 

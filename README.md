@@ -109,8 +109,13 @@ individuo ne vedi l'F personale, i genitori e i figli.
    (stile lettore video: play/pausa, anche con la barra spaziatrice) permette di
    scorrere qualsiasi anno; durante il "play" l'animazione è fluida. In alto a
    destra puoi modificare i parametri e premere **«Riavvia»**.
-4. **Grafici.** *Frequenze alleliche nel tempo* (una linea per allele) e *Numero
-   di individui nel tempo*.
+4. **Grafici.** *Frequenze alleliche nel tempo* (una linea per allele),
+   *Frequenze genotipiche nel tempo* e *Numero di individui nel tempo*. Nel
+   grafico dei genotipi ogni genotipo ha due linee: **spessa** = frequenza
+   osservata, **sottile** = frequenza attesa sotto Hardy-Weinberg (p², 2pq, q²).
+   Se le due linee si separano, le proporzioni genotipiche non sono quelle di HW.
+   Gli omozigoti hanno il colore del proprio allele, gli eterozigoti una linea a
+   due colori alternati (come i simboli tagliati in diagonale nella sandbox).
 5. **Dettaglio.** **Clicca un individuo** per vederne sesso, età, genotipo,
    consanguineità, genitori e figli.
 
@@ -160,6 +165,7 @@ js/
     controls.js       manopole + parametri di setup + frequenze iniziali
     timeline.js       barra temporale in stile lettore video
     chart.js          grafico delle frequenze alleliche nel tempo
+    genoChart.js      grafico delle frequenze genotipiche (osservate e attese HW) nel tempo
     popChart.js       grafico del numero di individui nel tempo
     hwPanel.js        pannello di equilibrio di Hardy-Weinberg
     infoPanel.js      scheda dell'individuo selezionato
