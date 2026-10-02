@@ -9,7 +9,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <link rel="stylesheet" href="css/styles.css?v=6" />
+  <link rel="stylesheet" href="css/styles.css?v=7" />
 </head>
 <!-- La classe su <body> commuta tra le due schermate: setup e simulazione. -->
 <body class="view-setup">
@@ -183,7 +183,37 @@
     <p>PopSim - strumento didattico di genetica di popolazione. Sviluppato da Federico M. Giorgi.</p>
   </footer>
 
-  <!-- Moduli ES nativi: nessun bundler, nessuno step di build. -->
-  <script type="module" src="js/main.js"></script>
+  <!-- Moduli ES nativi: nessun bundler, nessuno step di build.
+
+       VERSIONE DEI FILE (cache): GitHub Pages fa riusare ai browser i file per
+       10 minuti. Senza versione, dopo un aggiornamento un browser potrebbe
+       mescolare file nuovi e vecchi (es. index.html nuovo con main.js vecchio)
+       e la pagina si rompe. Per questo ogni file JS e il CSS sono richiesti con
+       "?v=N": a ogni rilascio si aumenta N OVUNQUE in questo file (stesso
+       numero, sostituzione globale di "?v=N") e i browser riscaricano tutto.
+       L'import map applica la versione anche agli import interni dei moduli:
+       ogni nuovo file in js/ va aggiunto qui. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "./js/config.js":           "./js/config.js?v=7",
+      "./js/recorder.js":         "./js/recorder.js?v=7",
+      "./js/model/genetics.js":   "./js/model/genetics.js?v=7",
+      "./js/model/individual.js": "./js/model/individual.js?v=7",
+      "./js/model/kinship.js":    "./js/model/kinship.js?v=7",
+      "./js/model/population.js": "./js/model/population.js?v=7",
+      "./js/model/rng.js":        "./js/model/rng.js?v=7",
+      "./js/render/sandbox.js":   "./js/render/sandbox.js?v=7",
+      "./js/ui/chart.js":         "./js/ui/chart.js?v=7",
+      "./js/ui/controls.js":      "./js/ui/controls.js?v=7",
+      "./js/ui/genoChart.js":     "./js/ui/genoChart.js?v=7",
+      "./js/ui/hwPanel.js":       "./js/ui/hwPanel.js?v=7",
+      "./js/ui/infoPanel.js":     "./js/ui/infoPanel.js?v=7",
+      "./js/ui/popChart.js":      "./js/ui/popChart.js?v=7",
+      "./js/ui/timeline.js":      "./js/ui/timeline.js?v=7"
+    }
+  }
+  </script>
+  <script type="module" src="js/main.js?v=7"></script>
 </body>
 </html>

@@ -142,6 +142,9 @@ frequenze; usa lo stesso **Seme** per confronti "a parità di caso".
   di build: il sorgente è ciò che viene servito.
 - Rendering su **Canvas 2D**, senza librerie esterne (funziona **offline**).
 - Solo **percorsi relativi** (il sito vive in `/popsim/`); `.nojekyll` nella radice.
+- **Versione dei file** (`?v=N` in `index.html`, anche nell'import map dei moduli):
+  va aumentata a ogni rilascio, così i browser non mescolano file vecchi in cache
+  con file nuovi. Ogni nuovo modulo in `js/` va aggiunto all'import map.
 - Numeri casuali **deterministici** con seme → simulazioni riproducibili.
 
 ### Struttura del codice
