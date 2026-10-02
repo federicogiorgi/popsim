@@ -211,21 +211,43 @@ export class Population {
 
   // Uccide `k` individui scelti tra `rest`, con probabilita' crescente con l'eta'.
   // (La selezione agisce sulle frequenze, non qui.)
+  // Estrazione pesata senza reinserimento: con k morti su n individui, un albero
+  // di Fenwick sulle somme cumulative dei pesi costa O(k log n) invece di O(k n).
+  // I pesi sono interi, quindi le somme sono esatte e la scelta coincide con
+  // quella di una scansione lineare ("il primo con somma cumulativa >= r").
   _weightedKill(rest, k, deadOut) {
-    const items = rest.map((ind) => ({ ind, w: 1 + ind.age, killed: false }));
+    const n = rest.length;
+    const tree = new Float64Array(n + 1); // indici 1..n
+    let total = 0;
+    for (let i = 0; i < n; i++) {
+      const w = 1 + rest[i].age;
+      total += w;
+      for (let j = i + 1; j <= n; j += j & -j) tree[j] += w;
+    }
+    let top = 1;
+    while (top * 2 <= n) top *= 2;
+    const killed = new Uint8Array(n);
     for (let picked = 0; picked < k; picked++) {
-      let total = 0;
-      for (const it of items) if (!it.killed) total += it.w;
       if (total <= 0) break;
-      let r = this.rng.next() * total;
-      for (const it of items) {
-        if (it.killed) continue;
-        r -= it.w;
-        if (r <= 0) { it.killed = true; deadOut.push(it.ind); break; }
+      const r = this.rng.next() * total;
+      // Discesa nell'albero: la posizione piu' alta con somma cumulativa < r.
+      let pos = 0;
+      let acc = 0;
+      for (let step = top; step > 0; step >>= 1) {
+        const nx = pos + step;
+        if (nx <= n && acc + tree[nx] < r) { pos = nx; acc += tree[nx]; }
       }
+      // pos e' 0-based dell'estratto; se r = 0 si prende il primo ancora vivo.
+      while (pos < n && killed[pos]) pos++;
+      if (pos >= n) break;
+      killed[pos] = 1;
+      deadOut.push(rest[pos]);
+      const w = 1 + rest[pos].age;
+      total -= w;
+      for (let j = pos + 1; j <= n; j += j & -j) tree[j] -= w;
     }
     const survivors = [];
-    for (const it of items) if (!it.killed) survivors.push(it.ind);
+    for (let i = 0; i < n; i++) if (!killed[i]) survivors.push(rest[i]);
     return survivors;
   }
 

@@ -115,6 +115,12 @@ async function run(config) {
 }
 
 // Genera tutti gli anni, a blocchi, aggiornando la barra di avanzamento.
+// I blocchi sono a TEMPO (non a numero di anni): si calcola per circa
+// SLICE_MS millisecondi, poi si cede il controllo al browser per aggiornare
+// l'overlay. Cosi' sui computer veloci si perde pochissimo tempo in attese e su
+// quelli lenti la pagina resta comunque reattiva.
+const SLICE_MS = 40;
+
 async function generate(config) {
   state.generating = true;
   showGenerating(true, 0, config.years);
@@ -124,7 +130,7 @@ async function generate(config) {
   state.recorder.record(state.pop.stats(), state.pop.snapshot()); // anno 0
 
   const total = config.years;
-  const chunk = Math.max(1, Math.min(25, Math.round(300000 / Math.max(1, config.size))));
+  let sliceStart = performance.now();
 
   for (let g = 1; g <= total; g++) {
     state.pop.step();
@@ -133,9 +139,10 @@ async function generate(config) {
       showGenerating(true, g, total);
       break;
     }
-    if (g % chunk === 0 || g === total) {
+    if (performance.now() - sliceStart >= SLICE_MS) {
       showGenerating(true, g, total);
       await nextFrame(); // cede il controllo: l'overlay si aggiorna, niente freeze
+      sliceStart = performance.now();
     }
   }
 
