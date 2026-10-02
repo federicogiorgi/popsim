@@ -74,8 +74,13 @@ Il pannello dedicato è pensato per insegnare che l'equilibrio di HW richiede
    che rompe questa condizione è l'accoppiamento non casuale (produce un eccesso
    di omozigoti).
 
-Il verdetto dice "**in equilibrio**" solo quando **entrambe** le condizioni sono
-soddisfatte. È un punto su cui gli studenti spesso si confondono: la migrazione
+Il pannello mostra le due condizioni come **due verifiche separate** (① e ②),
+ognuna con il proprio esito, e sopra un verdetto che dice "**in equilibrio**"
+solo quando **entrambe** sono soddisfatte. Così un χ² non significativo accanto a
+"NON in equilibrio" non è una contraddizione: vuol dire che la ② è rispettata ma
+la ① no (tipicamente per deriva). Se il χ² risulta significativo ma
+l'accoppiamento è casuale, la ② lo segnala come probabile fluttuazione
+campionaria (falso positivo atteso nel ~5% dei casi) e il verdetto non cambia. È un punto su cui gli studenti spesso si confondono: la migrazione
 sposta le frequenze (viola la 1) ma mantiene i genotipi in proporzioni di HW (non
 viola la 2); l'accoppiamento non casuale fa il contrario.
 

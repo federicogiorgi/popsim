@@ -32,32 +32,59 @@ export class HWPanel {
       .map((i) => alleleLabel(i) + ' = ' + obs[i].toFixed(3))
       .join(' &nbsp; ');
 
-    // L'equilibrio di Hardy-Weinberg richiede DUE cose:
-    //   1) le frequenze alleliche NON cambiano nel tempo (nessuna forza che le
-    //      sposta: deriva, migrazione, selezione, mutazione);
-    //   2) le proporzioni genotipiche sono quelle di HW (accoppiamento casuale).
-    // Il test chi-quadro cattura solo la (2); la (1) si vede dall'andamento delle
-    // frequenze nel tempo (parametro freqInfo, calcolato dalla cronologia).
+    // L'equilibrio di Hardy-Weinberg richiede DUE condizioni, mostrate come due
+    // verifiche separate (ognuna col proprio esito), piu' un verdetto finale:
+    //   (1) le frequenze alleliche NON cambiano nel tempo (nessuna forza che le
+    //       sposta: deriva, migrazione, selezione, mutazione). Si vede
+    //       dall'andamento nel tempo (freqInfo, calcolato dalla cronologia);
+    //   (2) le proporzioni genotipiche sono quelle di HW (accoppiamento casuale).
+    //       E' l'UNICA cosa che misura il test chi-quadro, su un singolo anno.
+    // Tenerle separate evita l'apparente contraddizione "chi-quadro non
+    // significativo ma NON in equilibrio": la deriva, ad esempio, viola la (1)
+    // lasciando intatta la (2).
     const p = hw.pValue;
+    const hasTrend = !!(freqInfo && freqInfo.window > 0);
     const changing = !!(freqInfo && freqInfo.changing);
-    const reasons = [];
-    let cls = 'ok';
-    if (changing) {
-      reasons.push('le frequenze alleliche stanno cambiando');
-      cls = 'warn';
-    }
+    const significant = p < 0.05;
+
     // Le proporzioni genotipiche sono alterate SOLO dall'accoppiamento non
-    // casuale (le altre forze campionano comunque in proporzioni di HW). Percio'
-    // segnaliamo lo scostamento genotipico solo quando quella manopola e' attiva:
-    // altrimenti un chi-quadro significativo e' solo rumore campionario (con
-    // popolazioni piccole capita nel ~5% dei casi anche ad accoppiamento casuale).
-    if (matingKnob > 0 && p < 0.05) {
-      reasons.push('proporzioni genotipiche alterate (accoppiamento non casuale)');
-      cls = p < 0.01 ? 'bad' : 'warn';
+    // casuale (le altre forze campionano comunque in proporzioni di HW). Con
+    // accoppiamento casuale un chi-quadro significativo e' solo rumore
+    // campionario (capita nel ~5% dei casi): lo mostriamo, ma non fa cadere
+    // il verdetto.
+    const genoViolated = matingKnob > 0 && significant;
+
+    const check1 = hasTrend
+      ? checkLine(!changing, '① Frequenze alleliche stabili nel tempo',
+          changing ? 'no: stanno cambiando' : 'sì',
+          'variazione max ' + freqInfo.delta.toFixed(3) + ' negli ultimi ' +
+          freqInfo.window + ' anni')
+      : checkLine(true, '① Frequenze alleliche stabili nel tempo', 'sì',
+          'primo anno: nessuna variazione ancora osservabile');
+
+    const testTxt = 'χ² = ' + hw.chi2.toFixed(2) + ', df ' + hw.df + ', p = ' + p.toFixed(3);
+    let check2;
+    if (!significant) {
+      check2 = checkLine(true, '② Proporzioni genotipiche di HW (test χ²)',
+        'sì', testTxt + ': non significativo');
+    } else if (genoViolated) {
+      check2 = checkLine(false, '② Proporzioni genotipiche di HW (test χ²)',
+        'no: alterate dall’accoppiamento non casuale', testTxt + ': significativo');
+    } else {
+      check2 = checkLine(null, '② Proporzioni genotipiche di HW (test χ²)',
+        'sì, probabilmente', testTxt + ': significativo, ma l’accoppiamento è casuale, ' +
+        'quindi è una fluttuazione campionaria (falso positivo atteso nel ~5% dei casi)');
     }
-    const verdict = reasons.length === 0
-      ? 'in equilibrio di Hardy-Weinberg'
-      : 'NON in equilibrio: ' + reasons.join(' · ');
+
+    let cls = 'ok';
+    let verdict = 'In equilibrio di Hardy-Weinberg (① e ② soddisfatte)';
+    if (changing || genoViolated) {
+      const failed = [];
+      if (changing) failed.push('①');
+      if (genoViolated) failed.push('②');
+      verdict = 'NON in equilibrio di Hardy-Weinberg (non soddisfatta: ' + failed.join(' e ') + ')';
+      cls = genoViolated && p < 0.01 ? 'bad' : 'warn';
+    }
 
     // Formula di riferimento, sempre mostrata (con esponenti in apice).
     let formula =
@@ -90,31 +117,31 @@ export class HWPanel {
         '</tr>';
     }
 
-    // Riga sull'andamento delle frequenze nel tempo (violazione della condizione 1).
-    let trendTxt = '';
-    if (freqInfo && freqInfo.window > 0) {
-      const arrow = changing ? '↕ in variazione' : '→ stabili';
-      trendTxt = '<p class="hw-line ' + (changing ? '' : 'muted') + '">' +
-        'Frequenze nel tempo: <strong>' + arrow + '</strong> ' +
-        '<span class="muted">(variazione max ' + freqInfo.delta.toFixed(3) +
-        ' negli ultimi ' + freqInfo.window + ' anni)</span></p>';
-    }
-
     this.el.innerHTML =
       '<div class="hw-head"><span class="badge ' + cls + '">' + verdict + '</span></div>' +
+      '<ul class="hw-checks">' + check1 + check2 + '</ul>' +
       '<p class="hw-line">' + freqTxt + '</p>' +
-      trendTxt +
       '<p class="hw-formula">' + formula + '</p>' +
       '<table class="hw-table">' +
       '<thead><tr><th>Genotipo</th><th>Osservati</th><th>Attesi (HW)</th></tr></thead>' +
       '<tbody>' + rows + '</tbody></table>' +
       '<p class="hw-stats">' +
-        'Coefficiente F (consanguineità, IBD) = ' + stats.F.toFixed(3) + ' &nbsp; ' +
-        'χ² = ' + hw.chi2.toFixed(2) + ' (df ' + hw.df + ', p = ' + hw.pValue.toFixed(3) + ')' +
+        'Coefficiente F (consanguineità, IBD) = ' + stats.F.toFixed(3) +
       '</p>';
   }
 
   clear() {
     this.el.innerHTML = '<p class="hint">Le statistiche di Hardy-Weinberg compariranno qui.</p>';
   }
+}
+
+// Una riga di verifica: esito (true = soddisfatta, false = violata, null =
+// soddisfatta con riserva), titolo, risposta breve e dettaglio numerico.
+function checkLine(ok, title, answer, detail) {
+  const cls = ok === true ? 'ok' : ok === false ? 'bad' : 'warn';
+  const icon = ok === true ? '✓' : ok === false ? '✗' : '~';
+  return '<li class="hw-check ' + cls + '">' +
+    '<span class="hw-check-icon" aria-hidden="true">' + icon + '</span>' +
+    '<span>' + title + ': <strong>' + answer + '</strong> ' +
+    '<span class="muted">(' + detail + ')</span></span></li>';
 }
