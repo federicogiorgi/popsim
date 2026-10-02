@@ -1,58 +1,57 @@
 // ui/hwPanel.js
 // Mostra lo scostamento dall'equilibrio di Hardy-Weinberg per il gene.
 //
-// Riferimento: p² + 2pq + q² = 1. Confrontiamo le frequenze genotipiche
-// OSSERVATE (dagli individui nella sandbox) con quelle ATTESE sotto HW, calcolate
-// dalle frequenze alleliche osservate. Con piu' alleli mostriamo la tabella
-// generalizzata (omozigote A_iA_i atteso p_i², eterozigote A_iA_j atteso 2·p_i·p_j).
+// Hardy-Weinberg e' una PREVISIONE: se nessuna forza agisce, dalle frequenze
+// alleliche p, q di una generazione nascono genotipi p² + 2pq + q² = 1. Il
+// pannello confronta i genotipi OSSERVATI oggi (individui nella sandbox) con
+// quelli PREVISTI da HW a partire dalle frequenze alleliche di HW_WINDOW anni
+// fa. Con piu' alleli: omozigote A_iA_i atteso p_i², eterozigote 2·p_i·p_j.
+// Cosi' ogni forza produce uno scostamento: deriva, selezione, migrazione e
+// mutazione spostando le frequenze alleliche, l'accoppiamento non casuale
+// alterando le proporzioni genotipiche.
 //
 // Nota importante: qui F e' la CONSANGUINEITÀ media della popolazione calcolata
 // dal pedigree (alleli IBD), sempre >= 0.
 
-import { alleleLabel } from '../config.js';
+import { alleleLabel, HW_WINDOW } from '../config.js';
+
+// Le forze che possono spostare la popolazione da Hardy-Weinberg (la mortalita'
+// cambia solo il numero di individui).
+const FORCES = ['drift', 'mutation', 'migration', 'selection', 'mating'];
 
 export class HWPanel {
   constructor(container) {
     this.el = container;
   }
 
-  // stats      : oggetto restituito da Population.stats()
-  // freqInfo   : { changing, delta, window } sull'andamento delle frequenze nel tempo
-  // matingKnob : valore della manopola "accoppiamento non casuale" (0..1)
-  render(stats, freqInfo, matingKnob = 0) {
+  // stats    : oggetto restituito da Population.stats()
+  // freqInfo : { changing, delta, window } sull'andamento delle frequenze nel tempo
+  // knobs    : valori delle manopole (per riconoscere i falsi positivi del test)
+  render(stats, freqInfo, knobs = {}) {
     const hw = stats.hw;
-    const obs = hw.p;
+    const refYear = Math.max(0, stats.year - HW_WINDOW);
+    const refTxt = refYear === 0 ? "dell'anno 0" : 'di ' + (stats.year - refYear) + ' anni fa';
 
-    // Solo gli alleli effettivamente presenti.
-    const present = [];
-    for (let i = 0; i < obs.length; i++) if (obs[i] > 0) present.push(i);
-    const k = present.length || 1;
-
-    const freqTxt = 'Frequenze osservate: ' + present
-      .map((i) => alleleLabel(i) + ' = ' + obs[i].toFixed(3))
-      .join(' &nbsp; ');
+    // Alleli da mostrare: presenti oggi o nella generazione di riferimento.
+    const shown = [];
+    for (let i = 0; i < hw.p.length; i++) if (hw.p[i] > 0 || hw.refP[i] > 0) shown.push(i);
+    const fmt = (arr) => shown.map((i) => alleleLabel(i) + ' = ' + arr[i].toFixed(3)).join(' &nbsp; ');
 
     // L'equilibrio di Hardy-Weinberg richiede DUE condizioni, mostrate come due
     // verifiche separate (ognuna col proprio esito), piu' un verdetto finale:
-    //   (1) le frequenze alleliche NON cambiano nel tempo (nessuna forza che le
-    //       sposta: deriva, migrazione, selezione, mutazione). Si vede
-    //       dall'andamento nel tempo (freqInfo, calcolato dalla cronologia);
-    //   (2) le proporzioni genotipiche sono quelle di HW (accoppiamento casuale).
-    //       E' l'UNICA cosa che misura il test chi-quadro, su un singolo anno.
-    // Tenerle separate evita l'apparente contraddizione "chi-quadro non
-    // significativo ma NON in equilibrio": la deriva, ad esempio, viola la (1)
-    // lasciando intatta la (2).
+    //   (1) le frequenze alleliche NON cambiano nel tempo (dalla cronologia);
+    //   (2) i genotipi osservati oggi sono quelli PREVISTI da HW con le
+    //       frequenze di riferimento (test chi-quadro). Ogni forza la viola.
     const p = hw.pValue;
     const hasTrend = !!(freqInfo && freqInfo.window > 0);
     const changing = !!(freqInfo && freqInfo.changing);
     const significant = p < 0.05;
+    const anyForce = FORCES.some((name) => (knobs[name] || 0) > 0);
 
-    // Le proporzioni genotipiche sono alterate SOLO dall'accoppiamento non
-    // casuale (le altre forze campionano comunque in proporzioni di HW). Con
-    // accoppiamento casuale un chi-quadro significativo e' solo rumore
-    // campionario (capita nel ~5% dei casi): lo mostriamo, ma non fa cadere
-    // il verdetto.
-    const genoViolated = matingKnob > 0 && significant;
+    // Senza alcuna forza attiva, un chi-quadro significativo e' solo rumore
+    // campionario (capita nel ~5% dei casi): lo mostriamo, ma non fa cadere il
+    // verdetto. Un allele comparso dal nulla (mutazione) invece e' certo.
+    const genoViolated = hw.impossible || (anyForce && significant);
 
     const check1 = hasTrend
       ? checkLine(!changing, '① Frequenze alleliche stabili nel tempo',
@@ -62,18 +61,21 @@ export class HWPanel {
       : checkLine(true, '① Frequenze alleliche stabili nel tempo', 'sì',
           'primo anno: nessuna variazione ancora osservabile');
 
+    const title2 = '② Genotipi come previsti da Hardy-Weinberg (test χ²)';
     const testTxt = 'χ² = ' + hw.chi2.toFixed(2) + ', df ' + hw.df + ', p = ' + p.toFixed(3);
     let check2;
-    if (!significant) {
-      check2 = checkLine(true, '② Proporzioni genotipiche di HW (test χ²)',
-        'sì', testTxt + ': non significativo');
+    if (hw.impossible) {
+      check2 = checkLine(false, title2, 'no: è comparso un allele nuovo',
+        'genotipi impossibili per HW: l’allele non esisteva nell’anno ' + refYear + ' (mutazione)');
+    } else if (!significant) {
+      check2 = checkLine(true, title2, 'sì', testTxt + ': non significativo');
     } else if (genoViolated) {
-      check2 = checkLine(false, '② Proporzioni genotipiche di HW (test χ²)',
-        'no: alterate dall’accoppiamento non casuale', testTxt + ': significativo');
+      check2 = checkLine(false, title2, 'no: i genotipi si sono allontanati dalla previsione',
+        testTxt + ': significativo');
     } else {
-      check2 = checkLine(null, '② Proporzioni genotipiche di HW (test χ²)',
-        'sì, probabilmente', testTxt + ': significativo, ma l’accoppiamento è casuale, ' +
-        'quindi è una fluttuazione campionaria (falso positivo atteso nel ~5% dei casi)');
+      check2 = checkLine(null, title2, 'sì, probabilmente', testTxt +
+        ': significativo, ma nessuna forza è attiva, quindi è una fluttuazione ' +
+        'campionaria (falso positivo atteso nel ~5% dei casi)');
     }
 
     let cls = 'ok';
@@ -86,18 +88,18 @@ export class HWPanel {
       cls = genoViolated && p < 0.01 ? 'bad' : 'warn';
     }
 
-    // Formula di riferimento, sempre mostrata (con esponenti in apice).
-    let formula =
-      '<code>p<sup>2</sup> + 2pq + q<sup>2</sup> = 1</code>';
-    if (k === 2) {
-      // Espansione numerica esplicita nel caso a due alleli.
-      const pi = obs[present[0]], qi = obs[present[1]];
+    // Formula di riferimento (con esponenti in apice), calcolata con le
+    // frequenze della generazione di riferimento: e' la PREVISIONE di HW.
+    const ref = hw.refP;
+    const refShown = shown.filter((i) => ref[i] > 0);
+    let formula = '<code>p<sup>2</sup> + 2pq + q<sup>2</sup> = 1</code>';
+    if (refShown.length === 2) {
+      const pi = ref[refShown[0]], qi = ref[refShown[1]];
       formula += ' &nbsp;→&nbsp; ' +
         '<code>' + (pi * pi).toFixed(3) + ' + ' + (2 * pi * qi).toFixed(3) +
         ' + ' + (qi * qi).toFixed(3) + ' = ' +
         (pi * pi + 2 * pi * qi + qi * qi).toFixed(3) + '</code>';
-    } else {
-      // Con piu' di due alleli, la generalizzazione della stessa relazione.
+    } else if (refShown.length > 2) {
       formula += '<br><span class="muted">omozigote A<sub>i</sub>A<sub>i</sub> = p<sub>i</sub><sup>2</sup> ; ' +
         'eterozigote A<sub>i</sub>A<sub>j</sub> = 2·p<sub>i</sub>·p<sub>j</sub></span>';
     }
@@ -120,10 +122,13 @@ export class HWPanel {
     this.el.innerHTML =
       '<div class="hw-head"><span class="badge ' + cls + '">' + verdict + '</span></div>' +
       '<ul class="hw-checks">' + check1 + check2 + '</ul>' +
-      '<p class="hw-line">' + freqTxt + '</p>' +
+      '<p class="hw-line">Frequenze alleliche ' + refTxt + ' (anno ' + refYear + '): ' + fmt(ref) +
+        ' &nbsp;<span class="muted">→ base della previsione</span></p>' +
+      '<p class="hw-line">Frequenze alleliche oggi negli individui: ' + fmt(hw.p) + '</p>' +
       '<p class="hw-formula">' + formula + '</p>' +
       '<table class="hw-table">' +
-      '<thead><tr><th>Genotipo</th><th>Osservati</th><th>Attesi (HW)</th></tr></thead>' +
+      '<thead><tr><th>Genotipo</th><th>Osservati (oggi)</th><th>Attesi HW (dalle frequenze dell’anno ' +
+        refYear + ')</th></tr></thead>' +
       '<tbody>' + rows + '</tbody></table>' +
       '<p class="hw-stats">' +
         'Coefficiente F (consanguineità, IBD) = ' + stats.F.toFixed(3) +

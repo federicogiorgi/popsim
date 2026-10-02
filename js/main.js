@@ -20,7 +20,7 @@ import { Controls } from './ui/controls.js';
 import { Timeline } from './ui/timeline.js';
 import { HWPanel } from './ui/hwPanel.js';
 import { InfoPanel, personFromSnapshot } from './ui/infoPanel.js';
-import { WORLD, DEFAULTS } from './config.js';
+import { WORLD, DEFAULTS, HW_WINDOW } from './config.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -230,7 +230,7 @@ function render() {
     chart.draw(state.recorder.frames, cursor);
     genoChart.draw(state.recorder.frames, cursor);
     popChart.draw(state.recorder.frames, cursor);
-    hwPanel.render(stats, freqTrend(cursor), state.config.knobs.mating);
+    hwPanel.render(stats, freqTrend(cursor), state.config.knobs);
     updateInfo(cursor);
     timeline.update(cursor, last, state.playing, stats.size);
   }
@@ -240,7 +240,7 @@ function render() {
 // cambiate (al massimo, su tutti gli alleli) rispetto a qualche anno prima.
 // Serve al pannello HW per dire se la popolazione e' o meno in equilibrio (le
 // frequenze che cambiano nel tempo violano l'equilibrio di Hardy-Weinberg).
-function freqTrend(cursor, window = 15) {
+function freqTrend(cursor, window = HW_WINDOW) {
   const frames = state.recorder.frames;
   const t0 = Math.max(0, cursor - window);
   const f1 = frames[cursor].stats.freq;

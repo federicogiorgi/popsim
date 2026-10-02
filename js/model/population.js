@@ -22,7 +22,7 @@ import { RNG } from './rng.js';
 import { createIndividual } from './individual.js';
 import { KinshipTracker } from './kinship.js';
 import * as G from './genetics.js';
-import { WORLD, SCALES, LIFE, LIMITS, MAX_ALLELES, FAVORED_ALLELE } from '../config.js';
+import { WORLD, SCALES, LIFE, LIMITS, MAX_ALLELES, FAVORED_ALLELE, HW_WINDOW } from '../config.js';
 
 export class Population {
   constructor(config) {
@@ -44,6 +44,9 @@ export class Population {
     this.freq = new Array(MAX_ALLELES).fill(0);
     const init = G.normalize(config.initFreq.slice(0, this.alleleCount));
     for (let i = 0; i < this.alleleCount; i++) this.freq[i] = init[i];
+    // Storico delle frequenze (una riga per anno): serve al test di HW, che
+    // confronta i genotipi di oggi con la previsione di HW_WINDOW anni fa.
+    this.freqHistory = [this.freq.slice()];
 
     // Sorgente dei migranti: distribuzione uniforme sugli alleli presenti.
     this._migrantSource = () => {
@@ -127,6 +130,7 @@ export class Population {
 
     // (1) Forze sulle frequenze alleliche.
     this._applyForces();
+    this.freqHistory.push(this.freq.slice());
 
     // (2) Invecchiamento.
     for (const ind of this.individuals) ind.age++;
@@ -325,7 +329,9 @@ export class Population {
     for (const ind of this.individuals) if (ind.sex === 'M') males++;
 
     // Misure OSSERVATE sul campione di individui (per il test HW).
-    const hw = G.hwComparison(this.individuals, this.alleleCount);
+    // Previsione di HW dalle frequenze di HW_WINDOW anni fa (o dell'anno 0).
+    const ref = this.freqHistory[Math.max(0, this.year - HW_WINDOW)];
+    const hw = G.hwComparison(this.individuals, this.alleleCount, ref);
 
     return {
       year: this.year,

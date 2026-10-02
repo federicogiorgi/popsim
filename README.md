@@ -62,27 +62,38 @@ Sotto il cofano il modello è a **due livelli**, e questo è il cuore didattico:
 
 ### Equilibrio di Hardy-Weinberg
 
-Il pannello dedicato è pensato per insegnare che l'equilibrio di HW richiede
-**due condizioni distinte**:
+Hardy-Weinberg è una **previsione**: se nessuna forza agisce, dalle frequenze
+alleliche p e q di una generazione nascono genotipi nelle proporzioni
+<code>p² + 2pq + q² = 1</code>, e le frequenze restano le stesse generazione dopo
+generazione. Il pannello verifica **due condizioni**, mostrate come due verifiche
+separate (① e ②), e sopra un verdetto che dice "**in equilibrio**" solo quando
+**entrambe** sono soddisfatte:
 
-1. **Le frequenze alleliche non cambiano nel tempo** — nessuna forza attiva
-   (deriva, migrazione, selezione, mutazione). Nel grafico si vede come **linee
-   piatte**. Se la linea è inclinata, la popolazione sta evolvendo.
-2. **Le proporzioni genotipiche sono quelle di HW** — cioè
-   <code>p² + 2pq + q²  = 1</code> (accoppiamento casuale). È verificato con un
-   **test chi-quadro** sui genotipi osservati contro quelli attesi. L'unica forza
-   che rompe questa condizione è l'accoppiamento non casuale (produce un eccesso
-   di omozigoti).
+1. **Le frequenze alleliche sono stabili nel tempo** (negli ultimi 30 anni). Nel
+   grafico si vede come **linee piatte**; se la linea è inclinata, la popolazione
+   sta evolvendo.
+2. **I genotipi sono quelli previsti da Hardy-Weinberg** — **test chi-quadro**
+   tra i genotipi **osservati oggi** e quelli **attesi** (p², 2pq, q²) calcolati
+   dalle frequenze alleliche di **30 anni fa** (alcune generazioni prima). Le
+   frequenze attese sono fissate in anticipo, quindi i gradi di libertà sono
+   (classi genotipiche − 1).
 
-Il pannello mostra le due condizioni come **due verifiche separate** (① e ②),
-ognuna con il proprio esito, e sopra un verdetto che dice "**in equilibrio**"
-solo quando **entrambe** sono soddisfatte. Così un χ² non significativo accanto a
-"NON in equilibrio" non è una contraddizione: vuol dire che la ② è rispettata ma
-la ① no (tipicamente per deriva). Se il χ² risulta significativo ma
-l'accoppiamento è casuale, la ② lo segnala come probabile fluttuazione
-campionaria (falso positivo atteso nel ~5% dei casi) e il verdetto non cambia. È un punto su cui gli studenti spesso si confondono: la migrazione
-sposta le frequenze (viola la 1) ma mantiene i genotipi in proporzioni di HW (non
-viola la 2); l'accoppiamento non casuale fa il contrario.
+Con questo confronto **ogni forza produce uno scostamento da HW**: deriva,
+selezione, migrazione e mutazione spostano le frequenze alleliche (i genotipi di
+oggi non sono più quelli previsti), l'accoppiamento non casuale altera le
+proporzioni (eccesso di omozigoti). Un allele nuovo comparso per mutazione rende
+i genotipi addirittura impossibili rispetto alla previsione. Senza forze,
+osservati e attesi coincidono. Anche il grafico *Frequenze genotipiche nel
+tempo* usa gli stessi attesi.
+
+Due note per l'aula:
+
+- Il test è statistico: con **pochi individui** o una **deriva debole** lo
+  spostamento può non essere ancora significativo (la deriva è essa stessa
+  fluttuazione casuale), mentre la verifica ① lo vede comunque.
+- Se il χ² è significativo ma **nessuna forza è attiva**, la ② lo segnala come
+  probabile fluttuazione campionaria (falso positivo atteso nel ~5% dei casi) e
+  il verdetto non cambia.
 
 ### Consanguineità (coefficiente F)
 

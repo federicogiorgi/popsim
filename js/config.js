@@ -66,6 +66,15 @@ export const LIFE = {
   lifeVariation: 0.18, // deviazione standard della vita, come frazione della vita media
 };
 
+// Test di Hardy-Weinberg: i genotipi osservati oggi sono confrontati con quelli
+// PREVISTI da HW (p², 2pq, q²) a partire dalle frequenze alleliche di
+// HW_WINDOW anni fa (alcune generazioni). Se nessuna forza agisce, previsione e
+// osservazione coincidono; ogni forza le fa divergere: deriva, selezione,
+// migrazione e mutazione spostando le frequenze alleliche, l'accoppiamento non
+// casuale alterando le proporzioni. La stessa finestra misura anche se le
+// frequenze alleliche stanno cambiando nel tempo.
+export const HW_WINDOW = 30;
+
 // Allele favorito dalla selezione direzionale (indice 0 = "A1").
 export const FAVORED_ALLELE = 0;
 

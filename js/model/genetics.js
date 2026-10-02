@@ -107,13 +107,21 @@ export function observedAlleleFreq(individuals, k) {
 // Confronto con Hardy-Weinberg
 // ---------------------------------------------------------------------------
 //
-// Confronta le frequenze genotipiche OSSERVATE con quelle ATTESE sotto HW,
-// calcolate dalle frequenze alleliche osservate nel campione:
+// Hardy-Weinberg e' una PREVISIONE: se nessuna forza evolutiva agisce, dalle
+// frequenze alleliche p_i di una generazione nascono genotipi nelle proporzioni
 //     p² + 2pq + q² = 1   (due alleli)
-// e, in generale, omozigote A_iA_i atteso p_i² ed eterozigote A_iA_j atteso
-// 2·p_i·p_j. I gradi di liberta' del test si riducono di (k-1) perche' si
-// stimano k-1 frequenze alleliche dai dati.
-export function hwComparison(individuals, k) {
+// e, in generale, omozigote A_iA_i atteso p_i², eterozigote A_iA_j 2·p_i·p_j.
+// Qui confrontiamo le frequenze genotipiche OSSERVATE oggi con quelle PREVISTE
+// a partire dalle frequenze alleliche di riferimento `refP` (quelle di qualche
+// generazione fa, vedi HW_WINDOW). Cosi' il test rileva ogni forza:
+//   - deriva, selezione, migrazione, mutazione spostano le frequenze alleliche,
+//     quindi i genotipi di oggi non sono piu' quelli previsti;
+//   - l'accoppiamento non casuale altera le proporzioni (eccesso di omozigoti).
+// Le frequenze attese sono fissate in anticipo (non stimate dai dati), quindi
+// i gradi di liberta' sono (numero di classi genotipiche - 1).
+// Se compare un genotipo con un allele che nella generazione di riferimento non
+// esisteva (mutazione), l'osservazione e' impossibile sotto HW: impossible = true.
+export function hwComparison(individuals, k, refP) {
   const n = individuals.length;
 
   const obs = new Map();
@@ -128,37 +136,38 @@ export function hwComparison(individuals, k) {
     obs.set(key, (obs.get(key) || 0) + 1);
   }
   const tot = n * 2 || 1;
-  const p = alleleCounts.map((c) => c / tot); // frequenze alleliche OSSERVATE
+  const p = alleleCounts.map((c) => c / tot); // frequenze alleliche OSSERVATE oggi
+  const q = normalize(refP.slice(0, k));      // frequenze di riferimento (previsione)
 
   const classes = [];
   for (let i = 0; i < k; i++) {
     const key = i + '-' + i;
-    classes.push({ i, j: i, homozygous: true, obs: obs.get(key) || 0, expFreq: p[i] * p[i] });
+    classes.push({ i, j: i, homozygous: true, obs: obs.get(key) || 0, expFreq: q[i] * q[i] });
   }
   for (let i = 0; i < k; i++) {
     for (let j = i + 1; j < k; j++) {
       const key = i + '-' + j;
-      classes.push({ i, j, homozygous: false, obs: obs.get(key) || 0, expFreq: 2 * p[i] * p[j] });
+      classes.push({ i, j, homozygous: false, obs: obs.get(key) || 0, expFreq: 2 * q[i] * q[j] });
     }
   }
 
   let chi2 = 0;
   let categories = 0;
+  let impossible = false;
   for (const c of classes) {
     c.exp = n * c.expFreq;
     c.obsFreq = n > 0 ? c.obs / n : 0;
     if (c.exp > 0) {
       chi2 += ((c.obs - c.exp) * (c.obs - c.exp)) / c.exp;
       categories++;
+    } else if (c.obs > 0) {
+      impossible = true;
     }
   }
-  // Numero di alleli effettivamente presenti (per gradi di liberta' realistici).
-  let present = 0;
-  for (const pi of p) if (pi > 0) present++;
-  const df = Math.max(1, categories - 1 - Math.max(0, present - 1));
-  const pValue = chiSquarePValue(chi2, df);
+  const df = Math.max(1, categories - 1);
+  const pValue = n === 0 ? 1 : impossible ? 0 : chiSquarePValue(chi2, df);
 
-  return { n, p: p.slice(), classes, chi2, df, pValue };
+  return { n, p: p.slice(), refP: q, classes, chi2, df, pValue, impossible };
 }
 
 // ---------------------------------------------------------------------------
