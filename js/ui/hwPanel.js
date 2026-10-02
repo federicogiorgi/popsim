@@ -7,8 +7,7 @@
 // generalizzata (omozigote A_iA_i atteso p_i², eterozigote A_iA_j atteso 2·p_i·p_j).
 //
 // Nota importante: qui F e' la CONSANGUINEITÀ media della popolazione calcolata
-// dal pedigree (alleli IBD), sempre >= 0 — non e' 1 - Ho/He, che potrebbe
-// risultare negativa per solo rumore campionario.
+// dal pedigree (alleli IBD), sempre >= 0.
 
 import { alleleLabel } from '../config.js';
 
@@ -110,9 +109,7 @@ export class HWPanel {
       '<thead><tr><th>Genotipo</th><th>Osservati</th><th>Attesi (HW)</th></tr></thead>' +
       '<tbody>' + rows + '</tbody></table>' +
       '<p class="hw-stats">' +
-        'H<sub>o</sub> = ' + stats.Ho.toFixed(3) + ' &nbsp; ' +
-        'H<sub>e</sub> = ' + stats.He.toFixed(3) + ' &nbsp; ' +
-        'F (consanguineità, IBD) = ' + stats.F.toFixed(3) + ' &nbsp; ' +
+        'Coefficiente F (consanguineità, IBD) = ' + stats.F.toFixed(3) + ' &nbsp; ' +
         'χ² = ' + hw.chi2.toFixed(2) + ' (df ' + hw.df + ', p = ' + hw.pValue.toFixed(3) + ')' +
       '</p>';
   }

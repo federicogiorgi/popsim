@@ -118,7 +118,7 @@ Parti dai default e cambia **solo** i parametri indicati.
 | 1 | **Equilibrio di HW** | tutto di default, N = 300 | linee piatte, "in equilibrio", genotipi osservati ≈ attesi |
 | 2 | **Deriva ∝ 1/N** | Deriva = 1; confronta **N = 20** e **N = 500** | con N piccolo le frequenze oscillano e un allele si **fissa**; con N grande restano quasi piatte |
 | 3 | **Selezione** | Selezione = 1, N = 200, Freq. A1 = 0.1 / A2 = 0.9 | A1, pur partendo raro, sale a curva a S fino a **fissarsi** |
-| 4 | **Accoppiamento non casuale** | Accoppiamento = 1, N = 300, Freq. 0.5 / 0.5 | frequenze **ferme**, ma Hₒ → 0 e χ² enorme: "proporzioni genotipiche alterate" |
+| 4 | **Accoppiamento non casuale** | Accoppiamento = 1, N = 300, Freq. 0.5 / 0.5 | frequenze **ferme**, ma eccesso di omozigoti e χ² enorme: "proporzioni genotipiche alterate" |
 | 5 | **Isolamento e consanguineità** *(combinazione)* | N = 20, Deriva = 1 → poi aggiungi **Migrazione = 0.4** | senza migrazione: fissazione **e** F che sale; con migrazione: niente fissazione e F basso (il flusso genico "salva" la popolazione) |
 | 6 | **Selezione vs deriva** *(combinazione)* | N = 15, Selezione = 0.3, Deriva = 1, Freq. A1 = 0.3 | l'allele favorito a volte si fissa, a volte si **perde** per deriva (cambia il **Seme** e rilancia): in piccole popolazioni la deriva può battere la selezione |
 

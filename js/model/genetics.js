@@ -9,7 +9,7 @@
 //      il loro genotipo e' una realizzazione campionaria coerente con le frequenze.
 //
 // Qui stanno le forze che agiscono sulle FREQUENZE e le MISURE sulla popolazione
-// (frequenze osservate, eterozigosita', test di Hardy-Weinberg). La simulazione
+// (frequenze osservate, test di Hardy-Weinberg). La simulazione
 // si basa su un solo gene, quindi ogni individuo ha un genotipo [a, b].
 //
 // Convenzione: una "frequenza allelica" e' un array p con p[i] = frequenza
@@ -101,24 +101,6 @@ export function observedAlleleFreq(individuals, k) {
   }
   const tot = individuals.length * 2 || 1;
   return counts.map((c) => c / tot);
-}
-
-// Eterozigosita' ATTESA He = 1 - Σ p_i². Probabilita' che due alleli presi a
-// caso siano diversi. Massima quando le frequenze sono uniformi.
-export function expectedHeterozygosity(p) {
-  let sum = 0;
-  for (const pi of p) sum += pi * pi;
-  return 1 - sum;
-}
-
-// Eterozigosita' OSSERVATA Ho = frazione di individui eterozigoti.
-export function observedHeterozygosity(individuals) {
-  if (individuals.length === 0) return 0;
-  let het = 0;
-  for (const ind of individuals) {
-    if (ind.genotype[0] !== ind.genotype[1]) het++;
-  }
-  return het / individuals.length;
 }
 
 // ---------------------------------------------------------------------------

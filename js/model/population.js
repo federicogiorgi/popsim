@@ -304,8 +304,6 @@ export class Population {
 
     // Misure OSSERVATE sul campione di individui (per il test HW).
     const hw = G.hwComparison(this.individuals, this.alleleCount);
-    const Ho = G.observedHeterozygosity(this.individuals);
-    const He = G.expectedHeterozygosity(hw.p);
 
     return {
       year: this.year,
@@ -315,8 +313,6 @@ export class Population {
       births: this.pairs.length,
       alleleCount: this.alleleCount,
       freq,
-      He,
-      Ho,
       F,
       hw,
     };
