@@ -56,7 +56,7 @@ Sotto il cofano il modello è a **due livelli**, e questo è il cuore didattico:
 | **Mortalità** | Morti per ogni nato: **1** = popolazione costante, **< 1** cresce, **> 1** diminuisce (fino all'estinzione). |
 | **Deriva genetica** | Fluttuazione casuale delle frequenze (campionamento di Wright-Fisher): a 0 le frequenze restano costanti, sopra 0 compiono una passeggiata aleatoria e possono **fissarsi**. Più forte nelle popolazioni piccole (∝ 1/N). |
 | **Mutazione** | Comparsa di **nuovi alleli** nel tempo (fino a un massimo di 9). |
-| **Migrazione** | Ingresso/uscita di **migranti non imparentati** da/verso una popolazione esterna: avvicina le frequenze e **abbassa la consanguineità**. Il flusso è bilanciato, quindi la popolazione resta costante. |
+| **Migrazione (Flusso genico)** | Ingresso/uscita di **migranti non imparentati** da/verso una popolazione esterna: avvicina le frequenze e **abbassa la consanguineità**. Il flusso è bilanciato, quindi la popolazione resta costante. |
 | **Selezione** | Vantaggio direzionale a favore dell'allele **A1**. |
 | **Accoppiamento non casuale** | Accoppiamento tra simili: **eccesso di omozigoti**, senza cambiare le frequenze alleliche. |
 

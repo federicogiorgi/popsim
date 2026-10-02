@@ -92,7 +92,7 @@ export const KNOBS = [
   },
   {
     name: 'migration',
-    label: 'Migrazione',
+    label: 'Migrazione (Flusso genico)',
     hint: 'Ingresso/uscita di migranti non imparentati: avvicina le frequenze e abbassa la consanguineità.',
     min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.migration,
   },
