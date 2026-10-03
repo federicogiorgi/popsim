@@ -137,19 +137,21 @@ individual shows its own F, its parents and its offspring.
 
 ## Classroom examples
 
-Start from the defaults and change **only** the listed parameters.
+The examples used in class. Start from the **default values** and change
+**only** the listed parameters.
 
-| # | Concept | Set | What you see |
+| # | Concept | Parameters | What you see |
 |---|---|---|---|
-| 1 | **HW equilibrium** | all defaults, N = 300 | flat lines, "in equilibrium", observed genotypes ≈ expected |
-| 2 | **Drift ∝ 1/N** | Genetic drift = 1; compare **N = 20** and **N = 500** | with small N the frequencies oscillate and an allele becomes **fixed**; with large N they stay almost flat |
-| 3 | **Selection** | Selection = 1, N = 200, Freq. A1 = 0.1 / A2 = 0.9 | A1, although initially rare, rises along an S-shaped curve until it is **fixed** |
-| 4 | **Non-random mating** | Non-random mating = 1, N = 300, Freq. 0.5 / 0.5 | frequencies **unchanged**, but an excess of homozygotes and a huge χ²: check ② fails |
-| 5 | **Isolation and inbreeding** *(combination)* | N = 20, Genetic drift = 1 → then add **Migration = 0.4** | without migration: fixation **and** rising F; with migration: no fixation and low F (gene flow "rescues" the population) |
-| 6 | **Selection vs drift** *(combination)* | N = 15, Selection = 0.3, Genetic drift = 1, Freq. A1 = 0.3 | the favoured allele sometimes becomes fixed and sometimes is **lost** by drift (change the **Seed** and run again): in small populations drift can beat selection |
+| 1 | **Hardy-Weinberg equilibrium** — the reference case, the "null model" | all defaults | the two frequency lines stay **flat** (A1 = 0.6, A2 = 0.4); the panel says "in equilibrium"; observed genotypes ≈ expected (p², 2pq, q²). Without forces the frequencies do not change: no evolution is taking place |
+| 2 | **Strong selection** (one allele becomes the only one) | Selection = 0.5, No. of individuals = 200, Freq. A1 = 0.1, Freq. A2 = 0.9 | A1, although initially rare, replaces the other allele. During the rise: "NOT in equilibrium" (the frequencies are changing); once fixation is reached, the population returns to Hardy-Weinberg equilibrium |
+| 3 | **Genetic drift**: small vs large population | Run A: Genetic drift = 0.3, No. of individuals = 20 · Run B: Genetic drift = 0.3, No. of individuals = 500 | in Run A the frequencies oscillate widely and an allele often disappears within a few hundred years; in Run B the lines stay almost flat. Drift is stronger the smaller the population |
+| 4 | **Non-random mating** | Non-random mating = 1, No. of individuals = 300 | the allele frequencies stay **unchanged** at their starting values (flat lines!), but in the panel the coefficient F rises and χ² is huge: "NOT in equilibrium" (check ②). Heterozygotes tend to disappear: it is the only force that changes genotype proportions without changing allele frequencies |
+| 5 | **Isolated population**: drift + immigration *(combination)* | Run A: No. of individuals = 20, Genetic drift = 1 · Run B (*rescue*): as A + Migration (gene flow) = 0.4 | Run A: the small population loses an allele. Run B: the genetic variability of the small population is rescued by constant immigration |
+| 6 | **Weak selection versus drift** *(combination)* | Duration = 100 years, Selection = 0.3, Genetic drift = 1, Freq. A1 = 0.1, Freq. A2 = 0.9 | the favoured allele A1 sometimes becomes fixed and sometimes is lost by drift: changing the seed changes the outcome. **Seed = 1**: A1 is lost by drift; **Seed = 2**: A1 becomes fixed and is the only allele left; **Seed = 5**: see for yourself. In small populations drift can overpower weak selection |
+| 7 | **Mutation** (birth of new alleles) | Mutation = 1, Genetic drift = 0.1, Duration = 10000 years | new coloured lines appear over time (A3, A4, … up to 9); some alleles persist in the population, others disappear right away (try several seeds). Mutation is the ultimate source of variability |
+| Bonus | **Departure from Hardy-Weinberg** | No. of individuals = 150, Genetic drift = 1 | check whether the population is in Hardy-Weinberg equilibrium (for long periods both checks ① and ② say "no"), then try the other forces |
 
-**Tips:** keep the speed low (1–5×) to watch the individuals move; the HW
-verdict is easy to read from **the slope** of the frequency lines; use the same
+**Tips:** keep the speed low (1–5×) to watch the individuals move; use the same
 **Seed** for "same luck" comparisons.
 
 ## Technical notes

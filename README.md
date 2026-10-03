@@ -133,20 +133,22 @@ individuo ne vedi l'F personale, i genitori e i figli.
 
 ## Esempi per la classe
 
-Parti dai default e cambia **solo** i parametri indicati.
+Gli esempi usati a lezione. Parti dai **valori di default** e cambia **solo** i
+parametri indicati.
 
-| # | Concetto | Imposta | Cosa osservi |
+| # | Concetto | Parametri | Cosa si osserva |
 |---|---|---|---|
-| 1 | **Equilibrio di HW** | tutto di default, N = 300 | linee piatte, "in equilibrio", genotipi osservati ≈ attesi |
-| 2 | **Deriva ∝ 1/N** | Deriva = 1; confronta **N = 20** e **N = 500** | con N piccolo le frequenze oscillano e un allele si **fissa**; con N grande restano quasi piatte |
-| 3 | **Selezione** | Selezione = 1, N = 200, Freq. A1 = 0.1 / A2 = 0.9 | A1, pur partendo raro, sale a curva a S fino a **fissarsi** |
-| 4 | **Accoppiamento non casuale** | Accoppiamento = 1, N = 300, Freq. 0.5 / 0.5 | frequenze **ferme**, ma eccesso di omozigoti e χ² enorme: "proporzioni genotipiche alterate" |
-| 5 | **Isolamento e consanguineità** *(combinazione)* | N = 20, Deriva = 1 → poi aggiungi **Migrazione = 0.4** | senza migrazione: fissazione **e** F che sale; con migrazione: niente fissazione e F basso (il flusso genico "salva" la popolazione) |
-| 6 | **Selezione vs deriva** *(combinazione)* | N = 15, Selezione = 0.3, Deriva = 1, Freq. A1 = 0.3 | l'allele favorito a volte si fissa, a volte si **perde** per deriva (cambia il **Seme** e rilancia): in piccole popolazioni la deriva può battere la selezione |
+| 1 | **Equilibrio di Hardy-Weinberg** — il caso di riferimento, il "modello nullo" | tutti di default | le due linee delle frequenze restano **piatte** (A1 = 0.6, A2 = 0.4); il pannello dice "in equilibrio"; genotipi osservati ≈ attesi (p², 2pq, q²). Senza forze le frequenze non cambiano: nessuna evoluzione in atto |
+| 2 | **Selezione forte** (un allele resta l'unico) | Selezione = 0.5, N. individui = 200, Freq. A1 = 0.1, Freq. A2 = 0.9 | A1, pur partendo raro, soppianta l'altro. Durante la salita: "NON in equilibrio" (le frequenze cambiano); a fissazione avvenuta torna in equilibrio di Hardy-Weinberg |
+| 3 | **Deriva genetica**: popolazione piccola vs grande | Run A: Deriva = 0.3, N. individui = 20 · Run B: Deriva = 0.3, N. individui = 500 | nella Run A le frequenze oscillano molto e spesso un allele scompare in poche centinaia d'anni; nella Run B le linee restano quasi piatte. La deriva è tanto più forte quanto più piccola è la popolazione |
+| 4 | **Accoppiamento non casuale** | Accoppiamento non casuale = 1, N. individui = 300 | le frequenze alleliche restano **ferme** ai valori iniziali (linee piatte!), ma nel pannello il coefficiente F aumenta e il χ² è enorme: "NON in equilibrio" (verifica ②). Gli eterozigoti tendono a scomparire: è l'unica forza che cambia le proporzioni genotipiche senza cambiare le frequenze alleliche |
+| 5 | **Popolazione isolata**: deriva + immigrazione *(combinazione)* | Run A: N. individui = 20, Deriva = 1 · Run B (*rescue*): come A + Migrazione (flusso genico) = 0.4 | Run A: la piccola popolazione perde un allele. Run B: la variabilità genetica della piccola popolazione viene salvata da una costante immigrazione |
+| 6 | **Selezione debole contro la deriva** *(combinazione)* | Durata = 100 anni, Selezione = 0.3, Deriva = 1, Freq. A1 = 0.1, Freq. A2 = 0.9 | l'allele favorito A1 a volte si fissa, a volte viene perso per deriva: cambiando il seme cambia l'esito. **Seme = 1**: A1 si perde per deriva; **Seme = 2**: A1 si fissa e resta l'unico; **Seme = 5**: da osservare. In popolazioni piccole la deriva può sopraffare una selezione debole |
+| 7 | **Mutazione** (nascita di nuovi alleli) | Mutazione = 1, Deriva genetica = 0.1, Durata = 10000 anni | nel tempo compaiono nuove linee colorate (A3, A4, … fino a 9); alcuni alleli restano nella popolazione, altri scompaiono subito (provare con vari semi). La mutazione è la sorgente ultima della variabilità |
+| Bonus | **Scostamento da Hardy-Weinberg** | N. individui = 150, Deriva = 1 | controlla se la popolazione è in equilibrio di Hardy-Weinberg (per lunghi periodi entrambe le verifiche ① e ② risultano "no"), poi riprova con le altre forze |
 
 **Consigli:** tieni la velocità bassa (1–5×) per vedere gli individui muoversi;
-il verdetto HW si legge bene guardando **la pendenza** della linea delle
-frequenze; usa lo stesso **Seme** per confronti "a parità di caso".
+usa lo stesso **Seme** per confronti "a parità di caso".
 
 ## Note tecniche
 
