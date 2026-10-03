@@ -9,7 +9,17 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <link rel="stylesheet" href="css/styles.css?v=8" />
+  <!-- Tema chiaro/scuro: di default quello del sistema operativo. Se l'utente
+       lo cambia con l'interruttore della schermata iniziale, la scelta resta
+       salvata nel browser (localStorage) e si applica qui, PRIMA di disegnare
+       la pagina (niente lampo del tema sbagliato). -->
+  <script>
+    try {
+      var t = localStorage.getItem('popsim-theme');
+      if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+    } catch (e) { /* storage non disponibile (es. navigazione privata): tema di sistema */ }
+  </script>
+  <link rel="stylesheet" href="css/styles.css?v=10" />
 </head>
 <!-- La classe su <body> commuta tra le due schermate: setup e simulazione. -->
 <body class="view-setup">
@@ -83,7 +93,16 @@
          (vedi setView in main.js). L'ordine dei blocchi cambia via CSS 'order'. -->
     <section id="setupScreen" class="panel setup-panel" aria-label="Parametri della simulazione">
       <div class="setup-intro">
-        <h2>Imposta la simulazione</h2>
+        <div class="intro-head">
+          <h2>Imposta la simulazione</h2>
+          <!-- Interruttore del tema chiaro/scuro (vedi js/ui/theme.js). -->
+          <button type="button" id="themeToggle" class="theme-toggle" role="switch"
+                  aria-label="Tema scuro" title="Tema chiaro / scuro">
+            <span aria-hidden="true">☀</span>
+            <span class="theme-track" aria-hidden="true"><span class="theme-knob"></span></span>
+            <span aria-hidden="true">☾</span>
+          </button>
+        </div>
         <p class="hint">
           La simulazione si basa su un solo gene (con più alleli possibili). Gli
           individui nascono, si accoppiano e muoiono, anno dopo anno. Regola i
@@ -196,24 +215,25 @@
   <script type="importmap">
   {
     "imports": {
-      "./js/config.js":           "./js/config.js?v=8",
-      "./js/recorder.js":         "./js/recorder.js?v=8",
-      "./js/model/genetics.js":   "./js/model/genetics.js?v=8",
-      "./js/model/individual.js": "./js/model/individual.js?v=8",
-      "./js/model/kinship.js":    "./js/model/kinship.js?v=8",
-      "./js/model/population.js": "./js/model/population.js?v=8",
-      "./js/model/rng.js":        "./js/model/rng.js?v=8",
-      "./js/render/sandbox.js":   "./js/render/sandbox.js?v=8",
-      "./js/ui/chart.js":         "./js/ui/chart.js?v=8",
-      "./js/ui/controls.js":      "./js/ui/controls.js?v=8",
-      "./js/ui/genoChart.js":     "./js/ui/genoChart.js?v=8",
-      "./js/ui/hwPanel.js":       "./js/ui/hwPanel.js?v=8",
-      "./js/ui/infoPanel.js":     "./js/ui/infoPanel.js?v=8",
-      "./js/ui/popChart.js":      "./js/ui/popChart.js?v=8",
-      "./js/ui/timeline.js":      "./js/ui/timeline.js?v=8"
+      "./js/config.js":           "./js/config.js?v=10",
+      "./js/recorder.js":         "./js/recorder.js?v=10",
+      "./js/model/genetics.js":   "./js/model/genetics.js?v=10",
+      "./js/model/individual.js": "./js/model/individual.js?v=10",
+      "./js/model/kinship.js":    "./js/model/kinship.js?v=10",
+      "./js/model/population.js": "./js/model/population.js?v=10",
+      "./js/model/rng.js":        "./js/model/rng.js?v=10",
+      "./js/render/sandbox.js":   "./js/render/sandbox.js?v=10",
+      "./js/ui/chart.js":         "./js/ui/chart.js?v=10",
+      "./js/ui/controls.js":      "./js/ui/controls.js?v=10",
+      "./js/ui/genoChart.js":     "./js/ui/genoChart.js?v=10",
+      "./js/ui/hwPanel.js":       "./js/ui/hwPanel.js?v=10",
+      "./js/ui/infoPanel.js":     "./js/ui/infoPanel.js?v=10",
+      "./js/ui/popChart.js":      "./js/ui/popChart.js?v=10",
+      "./js/ui/theme.js":         "./js/ui/theme.js?v=10",
+      "./js/ui/timeline.js":      "./js/ui/timeline.js?v=10"
     }
   }
   </script>
-  <script type="module" src="js/main.js?v=8"></script>
+  <script type="module" src="js/main.js?v=10"></script>
 </body>
 </html>

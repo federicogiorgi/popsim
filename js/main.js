@@ -20,6 +20,7 @@ import { Controls } from './ui/controls.js';
 import { Timeline } from './ui/timeline.js';
 import { HWPanel } from './ui/hwPanel.js';
 import { InfoPanel, personFromSnapshot } from './ui/infoPanel.js';
+import { initThemeSwitch } from './ui/theme.js';
 import { WORLD, DEFAULTS, HW_WINDOW } from './config.js';
 
 const $ = (id) => document.getElementById(id);
@@ -81,6 +82,10 @@ const timeline = new Timeline(
 // Pulsanti Avvia / Riavvia: entrambi (ri)generano con i parametri correnti.
 $('startBtn').addEventListener('click', () => run(controls.readConfig()));
 $('restartBtn').addEventListener('click', () => run(controls.readConfig()));
+
+// Interruttore del tema (schermata iniziale): i grafici su canvas leggono i
+// colori al momento del disegno, quindi si ridisegnano.
+initThemeSwitch($('themeToggle'), () => { forceRedraw(); renderNow(); });
 
 // Chiusura della scheda info.
 $('infoClose').addEventListener('click', () => {

@@ -162,7 +162,7 @@ frequenze; usa lo stesso **Seme** per confronti "a parità di caso".
 
 ```
 index.html            struttura della pagina e layout
-css/styles.css        stile responsive, tema chiaro/scuro
+css/styles.css        stile responsive, tema chiaro/scuro (di default quello del sistema)
 js/
   config.js           costanti, default, tavolozza colori, definizione delle manopole
   main.js             orchestratore: collega modello, renderer e interfaccia
@@ -181,6 +181,7 @@ js/
     chart.js          grafico delle frequenze alleliche nel tempo
     genoChart.js      grafico delle frequenze genotipiche (osservate e attese HW) nel tempo
     popChart.js       grafico del numero di individui nel tempo
+    theme.js          interruttore del tema chiaro/scuro (scelta ricordata nel browser)
     hwPanel.js        pannello di equilibrio di Hardy-Weinberg
     infoPanel.js      scheda dell'individuo selezionato
 ```
