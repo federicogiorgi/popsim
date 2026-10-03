@@ -10,12 +10,14 @@
 // parametri in fondo alla pagina (con il tasto "Riavvia").
 
 import { KNOBS, DEFAULTS, LIMITS, defaultFreqs, alleleLabel } from '../config.js';
+import { t } from '../i18n.js';
 
 export class Controls {
   constructor(refs, callbacks) {
     this.refs = refs;
     this.cb = callbacks;
     this.knobInputs = {};
+    this.knobTexts = {}; // nome -> { label: nodo di testo, hint: <p> } (per la lingua)
     this.freqInputs = [];
 
     this._buildKnobs();
@@ -33,7 +35,8 @@ export class Controls {
 
       const label = document.createElement('label');
       label.className = 'knob-label';
-      label.textContent = def.label;
+      const labelText = document.createTextNode(t('knob.' + def.name));
+      label.appendChild(labelText);
       const val = document.createElement('span');
       val.className = 'knob-value';
       val.textContent = def.default.toFixed(2);
@@ -45,14 +48,14 @@ export class Controls {
       input.max = String(def.max);
       input.step = String(def.step);
       input.value = String(def.default);
-      input.setAttribute('aria-label', def.label);
+      input.setAttribute('aria-label', t('knob.' + def.name));
       input.addEventListener('input', () => {
         val.textContent = parseFloat(input.value).toFixed(2);
       });
 
       const hint = document.createElement('p');
       hint.className = 'knob-hint';
-      hint.textContent = def.hint;
+      hint.textContent = t('knob.' + def.name + '.hint');
 
       wrap.appendChild(label);
       wrap.appendChild(input);
@@ -60,7 +63,19 @@ export class Controls {
       container.appendChild(wrap);
 
       this.knobInputs[def.name] = input;
+      this.knobTexts[def.name] = { label: labelText, hint };
     }
+  }
+
+  // Aggiorna i testi dei controlli nella lingua corrente (valori invariati).
+  relabel() {
+    for (const def of KNOBS) {
+      const tx = this.knobTexts[def.name];
+      tx.label.nodeValue = t('knob.' + def.name);
+      tx.hint.textContent = t('knob.' + def.name + '.hint');
+      this.knobInputs[def.name].setAttribute('aria-label', t('knob.' + def.name));
+    }
+    this.freqInputs.forEach((inp, i) => { inp.parentNode.firstChild.nodeValue = t('freq.label', alleleLabel(i)); });
   }
 
   // Collega i campi di setup e il controllo di velocita'.
@@ -100,7 +115,7 @@ export class Controls {
     const defs = defaultFreqs(k);
     for (let i = 0; i < k; i++) {
       const label = document.createElement('label');
-      label.textContent = 'Freq. ' + alleleLabel(i);
+      label.textContent = t('freq.label', alleleLabel(i));
       const input = document.createElement('input');
       input.type = 'number';
       input.min = '0';

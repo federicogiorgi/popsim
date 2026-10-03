@@ -80,41 +80,30 @@ export const FAVORED_ALLELE = 0;
 
 // Definizione delle manopole (le forze evolutive). Ogni manopola porta con se'
 // il proprio intervallo, cosi' l'interfaccia si costruisce da questi dati.
+// Nome e descrizione visibili stanno in i18n.js ('knob.<name>', 'knob.<name>.hint').
 export const KNOBS = [
   {
     name: 'mortality',
-    label: 'Mortalità',
-    hint: 'Morti per ogni nato: 1 mantiene la popolazione costante, sotto 1 la fa crescere, sopra 1 la fa diminuire.',
     min: 0, max: 2, step: 0.05, default: DEFAULTS.knobs.mortality,
   },
   {
     name: 'drift',
-    label: 'Deriva genetica',
-    hint: 'Fluttuazione casuale delle frequenze alleliche: più forte nelle popolazioni piccole. A 0 le frequenze restano costanti.',
     min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.drift,
   },
   {
     name: 'mutation',
-    label: 'Mutazione',
-    hint: 'Probabilità di comparsa di nuovi alleli nel tempo (fino a un massimo di 9 alleli).',
     min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.mutation,
   },
   {
     name: 'migration',
-    label: 'Migrazione (Flusso genico)',
-    hint: 'Ingresso/uscita di migranti non imparentati: avvicina le frequenze e abbassa la consanguineità.',
     min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.migration,
   },
   {
     name: 'selection',
-    label: 'Selezione',
-    hint: 'Vantaggio direzionale a favore dell’allele A1.',
     min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.selection,
   },
   {
     name: 'mating',
-    label: 'Accoppiamento non casuale',
-    hint: 'Accoppiamento tra simili: eccesso di omozigoti (F genotipico > 0), senza cambiare le frequenze alleliche.',
     min: 0, max: 1, step: 0.01, default: DEFAULTS.knobs.mating,
   },
 ];

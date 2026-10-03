@@ -14,6 +14,7 @@
 // dal pedigree (alleli IBD), sempre >= 0.
 
 import { alleleLabel, HW_WINDOW } from '../config.js';
+import { t } from '../i18n.js';
 
 // Le forze che possono spostare la popolazione da Hardy-Weinberg (la mortalita'
 // cambia solo il numero di individui).
@@ -30,7 +31,7 @@ export class HWPanel {
   render(stats, freqInfo, knobs = {}) {
     const hw = stats.hw;
     const refYear = Math.max(0, stats.year - HW_WINDOW);
-    const refTxt = refYear === 0 ? "dell'anno 0" : 'di ' + (stats.year - refYear) + ' anni fa';
+    const refTxt = refYear === 0 ? t('hw.refYear0') : t('hw.refAgo', stats.year - refYear);
 
     // Alleli da mostrare: presenti oggi o nella generazione di riferimento.
     const shown = [];
@@ -54,37 +55,30 @@ export class HWPanel {
     const genoViolated = hw.impossible || (anyForce && significant);
 
     const check1 = hasTrend
-      ? checkLine(!changing, '① Frequenze alleliche stabili nel tempo',
-          changing ? 'no: stanno cambiando' : 'sì',
-          'variazione max ' + freqInfo.delta.toFixed(3) + ' negli ultimi ' +
-          freqInfo.window + ' anni')
-      : checkLine(true, '① Frequenze alleliche stabili nel tempo', 'sì',
-          'primo anno: nessuna variazione ancora osservabile');
+      ? checkLine(!changing, t('hw.c1'), changing ? t('hw.c1.no') : t('hw.yes'),
+          t('hw.c1.detail', freqInfo.delta.toFixed(3), freqInfo.window))
+      : checkLine(true, t('hw.c1'), t('hw.yes'), t('hw.c1.first'));
 
-    const title2 = '② Genotipi come previsti da Hardy-Weinberg (test χ²)';
+    const title2 = t('hw.c2');
     const testTxt = 'χ² = ' + hw.chi2.toFixed(2) + ', df ' + hw.df + ', p = ' + p.toFixed(3);
     let check2;
     if (hw.impossible) {
-      check2 = checkLine(false, title2, 'no: è comparso un allele nuovo',
-        'genotipi impossibili per HW: l’allele non esisteva nell’anno ' + refYear + ' (mutazione)');
+      check2 = checkLine(false, title2, t('hw.c2.newAllele'), t('hw.c2.newAlleleDetail', refYear));
     } else if (!significant) {
-      check2 = checkLine(true, title2, 'sì', testTxt + ': non significativo');
+      check2 = checkLine(true, title2, t('hw.yes'), testTxt + ': ' + t('hw.c2.notSig'));
     } else if (genoViolated) {
-      check2 = checkLine(false, title2, 'no: i genotipi si sono allontanati dalla previsione',
-        testTxt + ': significativo');
+      check2 = checkLine(false, title2, t('hw.c2.no'), testTxt + ': ' + t('hw.c2.sig'));
     } else {
-      check2 = checkLine(null, title2, 'sì, probabilmente', testTxt +
-        ': significativo, ma nessuna forza è attiva, quindi è una fluttuazione ' +
-        'campionaria (falso positivo atteso nel ~5% dei casi)');
+      check2 = checkLine(null, title2, t('hw.c2.probably'), testTxt + ': ' + t('hw.c2.falsePos'));
     }
 
     let cls = 'ok';
-    let verdict = 'In equilibrio di Hardy-Weinberg (① e ② soddisfatte)';
+    let verdict = t('hw.inEq');
     if (changing || genoViolated) {
       const failed = [];
       if (changing) failed.push('①');
       if (genoViolated) failed.push('②');
-      verdict = 'NON in equilibrio di Hardy-Weinberg (non soddisfatta: ' + failed.join(' e ') + ')';
+      verdict = t('hw.notEq', failed.join(t('hw.and')));
       cls = genoViolated && p < 0.01 ? 'bad' : 'warn';
     }
 
@@ -100,8 +94,8 @@ export class HWPanel {
         ' + ' + (qi * qi).toFixed(3) + ' = ' +
         (pi * pi + 2 * pi * qi + qi * qi).toFixed(3) + '</code>';
     } else if (refShown.length > 2) {
-      formula += '<br><span class="muted">omozigote A<sub>i</sub>A<sub>i</sub> = p<sub>i</sub><sup>2</sup> ; ' +
-        'eterozigote A<sub>i</sub>A<sub>j</sub> = 2·p<sub>i</sub>·p<sub>j</sub></span>';
+      formula += '<br><span class="muted">' + t('hw.homoRule') + ' A<sub>i</sub>A<sub>i</sub> = p<sub>i</sub><sup>2</sup> ; ' +
+        t('hw.heteroRule') + ' A<sub>i</sub>A<sub>j</sub> = 2·p<sub>i</sub>·p<sub>j</sub></span>';
     }
 
     // Tabella genotipi: solo classi con osservati o attesi non trascurabili.
@@ -122,21 +116,21 @@ export class HWPanel {
     this.el.innerHTML =
       '<div class="hw-head"><span class="badge ' + cls + '">' + verdict + '</span></div>' +
       '<ul class="hw-checks">' + check1 + check2 + '</ul>' +
-      '<p class="hw-line">Frequenze alleliche ' + refTxt + ' (anno ' + refYear + '): ' + fmt(ref) +
-        ' &nbsp;<span class="muted">→ base della previsione</span></p>' +
-      '<p class="hw-line">Frequenze alleliche oggi negli individui: ' + fmt(hw.p) + '</p>' +
+      '<p class="hw-line">' + t('hw.refFreqs', refTxt, refYear) + fmt(ref) +
+        ' &nbsp;<span class="muted">' + t('hw.base') + '</span></p>' +
+      '<p class="hw-line">' + t('hw.nowFreqs') + fmt(hw.p) + '</p>' +
       '<p class="hw-formula">' + formula + '</p>' +
       '<table class="hw-table">' +
-      '<thead><tr><th>Genotipo</th><th>Osservati (oggi)</th><th>Attesi HW (dalle frequenze dell’anno ' +
-        refYear + ')</th></tr></thead>' +
+      '<thead><tr><th>' + t('hw.genotype') + '</th><th>' + t('hw.observed') + '</th><th>' +
+        t('hw.expected', refYear) + '</th></tr></thead>' +
       '<tbody>' + rows + '</tbody></table>' +
       '<p class="hw-stats">' +
-        'Coefficiente F (consanguineità, IBD) = ' + stats.F.toFixed(3) +
+        t('hw.F') + ' = ' + stats.F.toFixed(3) +
       '</p>';
   }
 
   clear() {
-    this.el.innerHTML = '<p class="hint">Le statistiche di Hardy-Weinberg compariranno qui.</p>';
+    this.el.innerHTML = '<p class="hint">' + t('hw.placeholder') + '</p>';
   }
 }
 

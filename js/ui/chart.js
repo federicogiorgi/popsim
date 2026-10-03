@@ -7,6 +7,7 @@
 // verticale segna l'anno corrente, allineata con cio' che si vede nella sandbox.
 
 import { ALLELE_COLORS, alleleLabel } from '../config.js';
+import { t } from '../i18n.js';
 
 export class FrequencyChart {
   constructor(canvas) {
@@ -92,7 +93,7 @@ export class FrequencyChart {
     ctx.textAlign = 'left';
     ctx.fillText('0', P.left, P.top + plotH + 4);
     ctx.textAlign = 'right';
-    ctx.fillText(maxT + ' anni', P.left + plotW, P.top + plotH + 4);
+    ctx.fillText(t('chart.years', maxT), P.left + plotW, P.top + plotH + 4);
 
     // Barra verticale del tempo corrente.
     const cx = xOf(Math.max(0, Math.min(maxT, cursor)));

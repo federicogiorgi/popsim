@@ -152,6 +152,8 @@ frequenze; usa lo stesso **Seme** per confronti "a parità di caso".
 - **JavaScript vanilla**, **moduli ES nativi**, **nessun bundler** e nessuno step
   di build: il sorgente è ciò che viene servito.
 - Rendering su **Canvas 2D**, senza librerie esterne (funziona **offline**).
+- Interfaccia in **italiano** (default) e **inglese**: si cambia con le bandierine in alto a
+  destra, accanto all'interruttore del tema chiaro/scuro.
 - Solo **percorsi relativi** (il sito vive in `/popsim/`); `.nojekyll` nella radice.
 - **Versione dei file** (`?v=N` in `index.html`, anche nell'import map dei moduli):
   va aumentata a ogni rilascio, così i browser non mescolano file vecchi in cache
@@ -165,6 +167,7 @@ index.html            struttura della pagina e layout
 css/styles.css        stile responsive, tema chiaro/scuro (di default quello del sistema)
 js/
   config.js           costanti, default, tavolozza colori, definizione delle manopole
+  i18n.js             testi dell'interfaccia in italiano e inglese (scelta ricordata nel browser)
   main.js             orchestratore: collega modello, renderer e interfaccia
   recorder.js         cronologia della simulazione (per tornare indietro nel tempo)
   model/              LA "GENETICA" — logica pura, indipendente dal renderer

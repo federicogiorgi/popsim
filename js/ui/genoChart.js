@@ -15,6 +15,7 @@
 // La legenda e' in HTML sopra il grafico, cosi' va a capo da sola.
 
 import { ALLELE_COLORS, alleleLabel } from '../config.js';
+import { t, getLang } from '../i18n.js';
 
 // Genotipi mai arrivati a questa frequenza (osservata o attesa) non vengono
 // disegnati: con tanti alleli eviterebbero un groviglio di linee a zero.
@@ -76,7 +77,7 @@ export class GenotypeChart {
   // come nella sandbox) e la spiegazione linea spessa / sottile.
   _legend(list) {
     if (!this.legendEl) return;
-    const key = list.map((s) => s.i + '-' + s.j).join(',');
+    const key = getLang() + ':' + list.map((s) => s.i + '-' + s.j).join(',');
     if (key === this._legendKey) return;
     this._legendKey = key;
     let html = '';
@@ -87,8 +88,8 @@ export class GenotypeChart {
       html += '<span class="lg"><span class="lg-shape" style="background:' + bg + '"></span>' +
         alleleLabel(s.i) + alleleLabel(s.j) + '</span>';
     }
-    html += '<span class="lg muted"><span class="lg-line"></span> osservate</span>' +
-      '<span class="lg muted"><span class="lg-line thin"></span> attese (HW)</span>';
+    html += '<span class="lg muted"><span class="lg-line"></span> ' + t('chart.observed') + '</span>' +
+      '<span class="lg muted"><span class="lg-line thin"></span> ' + t('chart.expected') + '</span>';
     this.legendEl.innerHTML = html;
   }
 
@@ -148,7 +149,7 @@ export class GenotypeChart {
     ctx.textAlign = 'left';
     ctx.fillText('0', P.left, P.top + plotH + 4);
     ctx.textAlign = 'right';
-    ctx.fillText(maxT + ' anni', P.left + plotW, P.top + plotH + 4);
+    ctx.fillText(t('chart.years', maxT), P.left + plotW, P.top + plotH + 4);
 
     // Barra verticale del tempo corrente.
     const cx = xOf(Math.max(0, Math.min(maxT, cursor)));

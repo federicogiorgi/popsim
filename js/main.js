@@ -21,6 +21,7 @@ import { Timeline } from './ui/timeline.js';
 import { HWPanel } from './ui/hwPanel.js';
 import { InfoPanel, personFromSnapshot } from './ui/infoPanel.js';
 import { initThemeSwitch } from './ui/theme.js';
+import { t, applyStatic, getLang, setLang, onLangChange } from './i18n.js';
 import { WORLD, DEFAULTS, HW_WINDOW } from './config.js';
 
 const $ = (id) => document.getElementById(id);
@@ -85,7 +86,26 @@ $('restartBtn').addEventListener('click', () => run(controls.readConfig()));
 
 // Interruttore del tema (schermata iniziale): i grafici su canvas leggono i
 // colori al momento del disegno, quindi si ridisegnano.
-initThemeSwitch($('themeToggle'), () => { forceRedraw(); renderNow(); });
+const syncTheme = initThemeSwitch($('themeToggle'), () => { forceRedraw(); renderNow(); });
+
+// Lingua (bandierine IT/EN accanto al tema): testi statici della pagina subito,
+// poi controlli, pannelli e grafici a ogni cambio. La simulazione non cambia.
+applyStatic();
+const langToggle = $('langToggle');
+function syncLang() {
+  const en = getLang() === 'en';
+  langToggle.setAttribute('aria-checked', String(en));
+  langToggle.setAttribute('aria-label', t('lang.aria'));
+}
+langToggle.addEventListener('click', () => setLang(getLang() === 'en' ? 'it' : 'en'));
+onLangChange(() => {
+  controls.relabel();
+  syncTheme();
+  syncLang();
+  forceRedraw();
+  renderNow();
+});
+syncLang();
 
 // Chiusura della scheda info.
 $('infoClose').addEventListener('click', () => {

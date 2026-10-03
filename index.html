@@ -17,18 +17,19 @@
     try {
       var t = localStorage.getItem('popsim-theme');
       if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      if (localStorage.getItem('popsim-lang') === 'en') document.documentElement.lang = 'en';
     } catch (e) { /* storage non disponibile (es. navigazione privata): tema di sistema */ }
   </script>
-  <link rel="stylesheet" href="css/styles.css?v=12" />
+  <link rel="stylesheet" href="css/styles.css?v=13" />
 </head>
 <!-- La classe su <body> commuta tra le due schermate: setup e simulazione. -->
 <body class="view-setup">
   <header class="app-header">
     <!-- Cliccando il titolo si ricarica il sito (percorso relativo): si torna alla
          schermata iniziale con i parametri reimpostati ai valori di default. -->
-    <a class="app-home" href="./" title="Torna alla schermata iniziale (reimposta i parametri)">
+    <a class="app-home" href="./" title="Torna alla schermata iniziale (reimposta i parametri)" data-i18n-attr="title:home.title">
       <h1>PopSim</h1>
-      <p class="subtitle">Simulatore di genetica di popolazione</p>
+      <p class="subtitle" data-i18n="subtitle">Simulatore di genetica di popolazione</p>
     </a>
   </header>
 
@@ -47,40 +48,40 @@
           <div id="genOverlay" class="gen-overlay" hidden>
             <div class="gen-box">
               <div class="spinner" aria-hidden="true"></div>
-              <strong>Simulazione evolutiva in corso…</strong>
+              <strong data-i18n="gen.running">Simulazione evolutiva in corso…</strong>
               <p id="genProgress">0 / 0</p>
               <div class="gen-bar"><div id="genBar" class="gen-bar-fill"></div></div>
             </div>
           </div>
 
           <!-- Scheda info dell'individuo, in overlay sulla sandbox. -->
-          <aside id="infoOverlay" class="info-overlay" hidden aria-label="Individuo selezionato">
-            <button id="infoClose" class="info-close" aria-label="Chiudi">×</button>
+          <aside id="infoOverlay" class="info-overlay" hidden aria-label="Individuo selezionato" data-i18n-attr="aria-label:info.aria">
+            <button id="infoClose" class="info-close" aria-label="Chiudi" data-i18n-attr="aria-label:info.close">×</button>
             <div id="infoPanel"></div>
           </aside>
         </div>
         <p class="legend">
-          <span class="lg"><span class="lg-shape circle"></span> femmina</span>
-          <span class="lg"><span class="lg-shape square"></span> maschio</span>
-          <span class="lg muted">colore = alleli (metà per allele negli eterozigoti) · clicca un individuo</span>
+          <span class="lg"><span class="lg-shape circle"></span> <span data-i18n="legend.female">femmina</span></span>
+          <span class="lg"><span class="lg-shape square"></span> <span data-i18n="legend.male">maschio</span></span>
+          <span class="lg muted" data-i18n="legend.color">colore = alleli (metà per allele negli eterozigoti) · clicca un individuo</span>
         </p>
       </section>
 
       <!-- BARRA TEMPORALE. Comandi sopra (con anno e numero di individui); cursore
            sotto, a tutta larghezza. -->
-      <section class="panel transport" aria-label="Controllo del tempo">
+      <section class="panel transport" aria-label="Controllo del tempo" data-i18n-attr="aria-label:transport.aria">
         <div class="transport-controls">
           <button id="playBtn" class="play-btn" aria-label="Play">▶ Play</button>
           <span id="timeLabel" class="time-label">Anno 0 / 0</span>
           <label class="speed-ctrl">
-            Velocità
+            <span data-i18n="speed">Velocità</span>
             <input id="speed" type="range" min="1" max="100" step="1" value="1" />
             <span id="speedLabel">1×</span>
           </label>
         </div>
         <div class="transport-track">
           <input id="slider" class="time-slider" type="range" min="0" max="0" value="0"
-                 step="1" aria-label="Linea temporale" />
+                 step="1" aria-label="Linea temporale" data-i18n-attr="aria-label:slider.aria" />
         </div>
       </section>
 
@@ -91,19 +92,39 @@
          forze e impostazioni. Il blocco delle frequenze iniziali vive qui in fase
          di setup e viene spostato sotto (a piena larghezza) durante la simulazione
          (vedi setView in main.js). L'ordine dei blocchi cambia via CSS 'order'. -->
-    <section id="setupScreen" class="panel setup-panel" aria-label="Parametri della simulazione">
-      <!-- Interruttore del tema chiaro/scuro (vedi js/ui/theme.js): in alto a
-           destra nel riquadro, sia nella schermata iniziale sia in simulazione
-           (accanto a «Riavvia»). -->
-      <button type="button" id="themeToggle" class="theme-toggle" role="switch"
-              aria-label="Tema scuro" title="Tema chiaro / scuro">
-        <span aria-hidden="true">☀</span>
-        <span class="theme-track" aria-hidden="true"><span class="theme-knob"></span></span>
-        <span aria-hidden="true">☾</span>
-      </button>
+    <section id="setupScreen" class="panel setup-panel" aria-label="Parametri della simulazione" data-i18n-attr="aria-label:params.aria">
+      <!-- Interruttori discreti in alto a destra nel riquadro, sia nella schermata
+           iniziale sia in simulazione (accanto a «Riavvia»): lingua (bandierine
+           IT/EN, vedi js/i18n.js) e tema chiaro/scuro (vedi js/ui/theme.js). -->
+      <div class="panel-switches">
+        <button type="button" id="langToggle" class="theme-toggle lang-toggle" role="switch"
+                aria-label="Lingua" title="Lingua: italiano / inglese" data-i18n-attr="title:lang.title">
+          <svg class="flag flag-it" viewBox="0 0 3 2" aria-hidden="true">
+            <rect width="1" height="2" fill="#009246" /><rect x="1" width="1" height="2" fill="#ffffff" /><rect x="2" width="1" height="2" fill="#ce2b37" />
+          </svg>
+          <span class="theme-track" aria-hidden="true"><span class="theme-knob"></span></span>
+          <svg class="flag flag-en" viewBox="0 0 60 30" aria-hidden="true">
+            <clipPath id="ukClipS"><path d="M0,0 v30 h60 v-30 z" /></clipPath>
+            <clipPath id="ukClipT"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z" /></clipPath>
+            <g clip-path="url(#ukClipS)">
+              <path d="M0,0 v30 h60 v-30 z" fill="#012169" />
+              <path d="M0,0 L60,30 M60,0 L0,30" stroke="#ffffff" stroke-width="6" />
+              <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#ukClipT)" stroke="#c8102e" stroke-width="4" />
+              <path d="M30,0 v30 M0,15 h60" stroke="#ffffff" stroke-width="10" />
+              <path d="M30,0 v30 M0,15 h60" stroke="#c8102e" stroke-width="6" />
+            </g>
+          </svg>
+        </button>
+        <button type="button" id="themeToggle" class="theme-toggle" role="switch"
+                aria-label="Tema scuro" title="Tema chiaro / scuro" data-i18n-attr="title:theme.title">
+          <span aria-hidden="true">☀</span>
+          <span class="theme-track" aria-hidden="true"><span class="theme-knob"></span></span>
+          <span aria-hidden="true">☾</span>
+        </button>
+      </div>
       <div class="setup-intro">
-        <h2>Imposta la simulazione</h2>
-        <p class="hint">
+        <h2 data-i18n="setup.title">Imposta la simulazione</h2>
+        <p class="hint" data-i18n="setup.hint">
           La simulazione si basa su un solo gene (con più alleli possibili). Gli
           individui nascono, si accoppiano e muoiono, anno dopo anno. Regola i
           parametri iniziali e le forze, poi premi «Avvia». Con tutte le forze a 0
@@ -113,39 +134,39 @@
       </div>
 
       <div class="setup-actions">
-        <button id="startBtn" class="primary">▶ Avvia simulazione</button>
-        <button id="restartBtn" class="primary">↻ Riavvia simulazione</button>
+        <button id="startBtn" class="primary" data-i18n="btn.start">▶ Avvia simulazione</button>
+        <button id="restartBtn" class="primary" data-i18n="btn.restart">↻ Riavvia simulazione</button>
       </div>
 
       <div class="setup-block block-forces">
-        <h3 class="group-title">Forze evolutive</h3>
+        <h3 class="group-title" data-i18n="group.forces">Forze evolutive</h3>
         <div id="knobs" class="knobs"></div>
       </div>
 
       <div class="setup-block block-settings">
-        <h3 class="group-title">Impostazioni iniziali</h3>
+        <h3 class="group-title" data-i18n="group.settings">Impostazioni iniziali</h3>
         <div class="setup-grid">
-          <label>N. individui
+          <label><span data-i18n="cfg.size">N. individui</span>
             <input id="cfgSize" type="number" min="2" max="1000" step="1" />
           </label>
-          <label>Durata (anni)
+          <label><span data-i18n="cfg.years">Durata (anni)</span>
             <input id="cfgYears" type="number" min="1" max="10000" step="1" />
           </label>
-          <label>Vita media (anni)
+          <label><span data-i18n="cfg.life">Vita media (anni)</span>
             <input id="cfgLife" type="number" min="3" max="100" step="1" />
           </label>
-          <label>Alleli iniziali
+          <label><span data-i18n="cfg.alleles">Alleli iniziali</span>
             <input id="cfgAlleles" type="number" min="2" max="9" step="1" />
           </label>
-          <label>Seme casuale
+          <label><span data-i18n="cfg.seed">Seme casuale</span>
             <input id="cfgSeed" type="number" step="1" />
           </label>
         </div>
       </div>
 
       <div class="setup-block block-freqs">
-        <h3 class="group-title">Frequenze alleliche iniziali</h3>
-        <p class="hint">La somma viene riportata a 1 all'avvio.</p>
+        <h3 class="group-title" data-i18n="group.freqs">Frequenze alleliche iniziali</h3>
+        <p class="hint" data-i18n="freqs.hint">La somma viene riportata a 1 all'avvio.</p>
         <div id="freqInputs" class="freq-grid setup-grid"></div>
       </div>
     </section>
@@ -155,9 +176,9 @@
     <div class="below-section">
 
       <!-- GRAFICO delle frequenze alleliche nel tempo. -->
-      <section class="panel chart-panel" aria-label="Andamento delle frequenze alleliche">
+      <section class="panel chart-panel" aria-label="Andamento delle frequenze alleliche" data-i18n-attr="aria-label:chart.freq.aria">
         <div class="chart-head">
-          <h2>Frequenze alleliche nel tempo</h2>
+          <h2 data-i18n="chart.freq.title">Frequenze alleliche nel tempo</h2>
         </div>
         <div class="chart-wrap">
           <canvas id="chart"></canvas>
@@ -166,9 +187,9 @@
 
       <!-- GRAFICO delle frequenze genotipiche nel tempo: osservate (spesse) e
            attese sotto Hardy-Weinberg (sottili). Legenda in HTML sopra il canvas. -->
-      <section class="panel chart-panel" aria-label="Andamento delle frequenze genotipiche">
+      <section class="panel chart-panel" aria-label="Andamento delle frequenze genotipiche" data-i18n-attr="aria-label:chart.geno.aria">
         <div class="chart-head">
-          <h2>Frequenze genotipiche nel tempo</h2>
+          <h2 data-i18n="chart.geno.title">Frequenze genotipiche nel tempo</h2>
           <p id="genoLegend" class="legend chart-legend"></p>
         </div>
         <div class="chart-wrap">
@@ -177,9 +198,9 @@
       </section>
 
       <!-- GRAFICO del numero di individui nel tempo. -->
-      <section class="panel chart-panel" aria-label="Andamento del numero di individui">
+      <section class="panel chart-panel" aria-label="Andamento del numero di individui" data-i18n-attr="aria-label:chart.pop.aria">
         <div class="chart-head">
-          <h2>Numero di individui nel tempo</h2>
+          <h2 data-i18n="chart.pop.title">Numero di individui nel tempo</h2>
         </div>
         <div class="chart-wrap">
           <canvas id="popChart"></canvas>
@@ -187,10 +208,10 @@
       </section>
 
       <!-- Scostamento da Hardy-Weinberg + frequenze genotipiche osservate. -->
-      <section class="panel hw-panel" aria-label="Equilibrio di Hardy-Weinberg">
-        <h2>Equilibrio di Hardy-Weinberg</h2>
+      <section class="panel hw-panel" aria-label="Equilibrio di Hardy-Weinberg" data-i18n-attr="aria-label:hw.title">
+        <h2 data-i18n="hw.title">Equilibrio di Hardy-Weinberg</h2>
         <div id="hwPanel">
-          <p class="hint">Le statistiche di Hardy-Weinberg compariranno qui.</p>
+          <p class="hint" data-i18n="hw.placeholder">Le statistiche di Hardy-Weinberg compariranno qui.</p>
         </div>
       </section>
 
@@ -199,7 +220,7 @@
   </main>
 
   <footer class="app-footer">
-    <p>PopSim - strumento didattico di genetica di popolazione. Sviluppato da Federico M. Giorgi.</p>
+    <p data-i18n="footer">PopSim - strumento didattico di genetica di popolazione. Sviluppato da Federico M. Giorgi.</p>
   </footer>
 
   <!-- Moduli ES nativi: nessun bundler, nessuno step di build.
@@ -215,25 +236,26 @@
   <script type="importmap">
   {
     "imports": {
-      "./js/config.js":           "./js/config.js?v=12",
-      "./js/recorder.js":         "./js/recorder.js?v=12",
-      "./js/model/genetics.js":   "./js/model/genetics.js?v=12",
-      "./js/model/individual.js": "./js/model/individual.js?v=12",
-      "./js/model/kinship.js":    "./js/model/kinship.js?v=12",
-      "./js/model/population.js": "./js/model/population.js?v=12",
-      "./js/model/rng.js":        "./js/model/rng.js?v=12",
-      "./js/render/sandbox.js":   "./js/render/sandbox.js?v=12",
-      "./js/ui/chart.js":         "./js/ui/chart.js?v=12",
-      "./js/ui/controls.js":      "./js/ui/controls.js?v=12",
-      "./js/ui/genoChart.js":     "./js/ui/genoChart.js?v=12",
-      "./js/ui/hwPanel.js":       "./js/ui/hwPanel.js?v=12",
-      "./js/ui/infoPanel.js":     "./js/ui/infoPanel.js?v=12",
-      "./js/ui/popChart.js":      "./js/ui/popChart.js?v=12",
-      "./js/ui/theme.js":         "./js/ui/theme.js?v=12",
-      "./js/ui/timeline.js":      "./js/ui/timeline.js?v=12"
+      "./js/config.js":           "./js/config.js?v=13",
+      "./js/i18n.js":             "./js/i18n.js?v=13",
+      "./js/recorder.js":         "./js/recorder.js?v=13",
+      "./js/model/genetics.js":   "./js/model/genetics.js?v=13",
+      "./js/model/individual.js": "./js/model/individual.js?v=13",
+      "./js/model/kinship.js":    "./js/model/kinship.js?v=13",
+      "./js/model/population.js": "./js/model/population.js?v=13",
+      "./js/model/rng.js":        "./js/model/rng.js?v=13",
+      "./js/render/sandbox.js":   "./js/render/sandbox.js?v=13",
+      "./js/ui/chart.js":         "./js/ui/chart.js?v=13",
+      "./js/ui/controls.js":      "./js/ui/controls.js?v=13",
+      "./js/ui/genoChart.js":     "./js/ui/genoChart.js?v=13",
+      "./js/ui/hwPanel.js":       "./js/ui/hwPanel.js?v=13",
+      "./js/ui/infoPanel.js":     "./js/ui/infoPanel.js?v=13",
+      "./js/ui/popChart.js":      "./js/ui/popChart.js?v=13",
+      "./js/ui/theme.js":         "./js/ui/theme.js?v=13",
+      "./js/ui/timeline.js":      "./js/ui/timeline.js?v=13"
     }
   }
   </script>
-  <script type="module" src="js/main.js?v=12"></script>
+  <script type="module" src="js/main.js?v=13"></script>
 </body>
 </html>

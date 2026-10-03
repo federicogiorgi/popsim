@@ -6,6 +6,8 @@
 // Questo modulo NON decide come avanza la simulazione: espone callback e viene
 // aggiornato da main.js, che resta l'unico "direttore d'orchestra".
 
+import { t } from '../i18n.js';
+
 export class Timeline {
   constructor(refs, callbacks) {
     this.playBtn = refs.playBtn;   // <button>
@@ -42,10 +44,10 @@ export class Timeline {
     if (document.activeElement !== this.slider) {
       this.slider.value = String(cursor);
     }
-    this.playBtn.textContent = playing ? '⏸ Pausa' : '▶ Play';
-    this.playBtn.setAttribute('aria-label', playing ? 'Pausa' : 'Play');
-    let txt = 'Anno ' + cursor + ' / ' + live;
-    if (size != null) txt += '   ·   ' + size + ' individui';
+    this.playBtn.textContent = playing ? t('time.pause') : t('time.play');
+    this.playBtn.setAttribute('aria-label', playing ? t('time.pauseAria') : t('time.playAria'));
+    let txt = t('time.label', cursor, live);
+    if (size != null) txt += '   ·   ' + t('time.size', size);
     this.timeLabel.textContent = txt;
   }
 }

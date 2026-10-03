@@ -8,6 +8,8 @@
 // index.html, prima che la pagina sia disegnata. Se lo storage non e'
 // disponibile (es. navigazione privata) il cambio funziona, ma non e' ricordato.
 
+import { t } from '../i18n.js';
+
 const KEY = 'popsim-theme';
 const systemDark = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
@@ -21,11 +23,12 @@ export function currentTheme() {
 // Collega l'interruttore (role="switch", acceso = scuro). `onChange` viene
 // chiamata dopo ogni cambio di tema (es. per ridisegnare i grafici su canvas),
 // anche quando cambia il tema di sistema e l'utente non ha scelto nulla.
+// Restituisce sync(), da richiamare per aggiornare le etichette (es. lingua).
 export function initThemeSwitch(toggle, onChange) {
   const sync = () => {
     const dark = currentTheme() === 'dark';
     toggle.setAttribute('aria-checked', String(dark));
-    toggle.setAttribute('aria-label', dark ? 'Tema scuro (attiva il chiaro)' : 'Tema chiaro (attiva lo scuro)');
+    toggle.setAttribute('aria-label', dark ? t('theme.dark') : t('theme.light'));
   };
   toggle.addEventListener('click', () => {
     const t = currentTheme() === 'dark' ? 'light' : 'dark';
@@ -38,4 +41,5 @@ export function initThemeSwitch(toggle, onChange) {
     systemDark.addEventListener('change', () => { sync(); if (onChange) onChange(currentTheme()); });
   }
   sync();
+  return sync;
 }
