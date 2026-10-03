@@ -4,7 +4,8 @@
 
 <p align="center">
   <b>▶ Prova subito:</b> <a href="https://federicogiorgi.github.io/popsim/">federicogiorgi.github.io/popsim</a><br>
-  <sub>Gira interamente nel browser · nessuna installazione · funziona anche offline</sub>
+  <sub>Gira interamente nel browser · nessuna installazione · funziona anche offline</sub><br>
+  <sub>🇬🇧 <a href="README.en.md">English version</a></sub>
 </p>
 
 ---
@@ -210,6 +211,10 @@ server statico.
 python -m http.server 8000
 # poi apri http://localhost:8000/
 ```
+
+## Licenza
+
+Rilasciato con [licenza MIT](LICENSE).
 
 ## Autore
 
