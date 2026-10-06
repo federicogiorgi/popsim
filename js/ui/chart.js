@@ -6,7 +6,7 @@
 // L'asse x e' il tempo in ANNI, l'asse y la frequenza da 0 a 1. Una barra
 // verticale segna l'anno corrente, allineata con cio' che si vede nella sandbox.
 
-import { ALLELE_COLORS, alleleLabel } from '../config.js';
+import { ALLELE_COLORS, alleleLabel, remPx } from '../config.js';
 import { t } from '../i18n.js';
 
 export class FrequencyChart {
@@ -14,7 +14,6 @@ export class FrequencyChart {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.dpr = 1;
-    this.padding = { left: 40, right: 12, top: 12, bottom: 24 };
     this.resize();
   }
 
@@ -25,6 +24,10 @@ export class FrequencyChart {
     this.canvas.height = Math.max(1, Math.round(rect.height * this.dpr));
     this.cssWidth = rect.width;
     this.cssHeight = rect.height;
+    // Caratteri e margini in proporzione al testo della pagina (rem). I rientri
+    // orizzontali combaciano con --plot-left / --plot-right in css/styles.css.
+    this.rem = remPx();
+    this.padding = { left: 2.6 * this.rem, right: 0.75 * this.rem, top: 0.75 * this.rem, bottom: 1.5 * this.rem };
   }
 
   // frames : array di fotogrammi del recorder (leggiamo frame.stats)
@@ -49,7 +52,7 @@ export class FrequencyChart {
     ctx.strokeStyle = axisColor;
     ctx.fillStyle = textColor;
     ctx.lineWidth = 1;
-    ctx.font = '11px system-ui, sans-serif';
+    ctx.font = Math.round(0.8 * this.rem) + 'px system-ui, sans-serif';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
     for (let k = 0; k <= 4; k++) {
@@ -75,7 +78,7 @@ export class FrequencyChart {
 
     for (let a = 0; a < maxA; a++) {
       ctx.strokeStyle = ALLELE_COLORS[a % ALLELE_COLORS.length];
-      ctx.lineWidth = 1.8;
+      ctx.lineWidth = Math.max(1.8, 0.14 * this.rem);
       ctx.beginPath();
       for (let t = 0; t < n; t++) {
         const f = frames[t].stats.freq[a];
@@ -109,17 +112,18 @@ export class FrequencyChart {
     // Legenda in alto: pallini colorati con l'etichetta dell'allele.
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    let lx = P.left + 6;
-    const ly = P.top + 8;
+    const u = this.rem / 16; // unita' di scala (1 a 16px)
+    let lx = P.left + 6 * u;
+    const ly = P.top + 8 * u;
     for (let a = 0; a < maxA; a++) {
       ctx.fillStyle = ALLELE_COLORS[a % ALLELE_COLORS.length];
       ctx.beginPath();
-      ctx.arc(lx + 4, ly, 4, 0, Math.PI * 2);
+      ctx.arc(lx + 4 * u, ly, 4 * u, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = textColor;
       const label = alleleLabel(a);
-      ctx.fillText(label, lx + 12, ly);
-      lx += 12 + ctx.measureText(label).width + 12;
+      ctx.fillText(label, lx + 12 * u, ly);
+      lx += 12 * u + ctx.measureText(label).width + 12 * u;
     }
   }
 }

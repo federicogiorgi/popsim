@@ -124,3 +124,10 @@ export const ALLELE_COLORS = [
 
 // Etichetta leggibile per un allele (A1, A2, ...). Con il cap a 9 resta a una cifra.
 export function alleleLabel(i) { return 'A' + (i + 1); }
+
+// Dimensione del testo di base della pagina (1rem) in pixel. Sugli schermi
+// ampi scala con la finestra (vedi css/styles.css): i grafici su canvas la
+// usano per caratteri e margini, cosi' crescono insieme al resto dell'interfaccia.
+export function remPx() {
+  return parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+}

@@ -121,10 +121,14 @@ individual shows its own F, its parents and its offspring.
    mean lifespan, the number of **starting alleles** and their **frequencies**,
    the random seed, and adjust the forces. Press **«Start simulation»**.
 2. **Computation.** All years are simulated in one go (progress bar).
-3. **Exploration.** The sandbox and the charts appear. The **timeline**
-   (video-player style: play/pause, also with the space bar) lets you scroll to
-   any year; during playback the animation is smooth. In the top right you can
-   change the parameters and press **«Restart»**.
+3. **Exploration.** On a wide screen the simulation fits in **a single 16:9
+   screen**, designed for the projector (text grows with the screen): on the
+   left the sandbox, the **timeline** and the allele-frequency chart; on the
+   right the **Hardy-Weinberg** result (✓ Yes / ✗ No), the forces and the
+   parameters, with **«Restart»** at the bottom. The timeline (video-player
+   style: play/pause, also with the space bar) lets you scroll to any year;
+   during playback the animation is smooth. Scrolling down you find the other
+   charts and the Hardy-Weinberg details.
 4. **Charts.** *Allele frequencies over time* (one line per allele), *Genotype
    frequencies over time* and *Number of individuals over time*. In the genotype
    chart each genotype has two lines: **thick** = observed frequency, **thin** =

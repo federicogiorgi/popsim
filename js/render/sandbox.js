@@ -11,7 +11,7 @@
 //     IN BASSO A DESTRA quello dell'allele "maggiore".
 //   - Un anello evidenzia l'individuo selezionato.
 
-import { ALLELE_COLORS } from '../config.js';
+import { ALLELE_COLORS, remPx } from '../config.js';
 
 export class SandboxRenderer {
   constructor(canvas) {
@@ -30,6 +30,7 @@ export class SandboxRenderer {
     this.canvas.height = Math.max(1, Math.round(rect.height * this.dpr));
     this.cssWidth = rect.width;
     this.cssHeight = rect.height;
+    this.scale = remPx() / 16; // simboli piu' grandi quando cresce il testo
   }
 
   _worldToCss(wx, wy) {
@@ -42,12 +43,14 @@ export class SandboxRenderer {
 
   _color(i) { return ALLELE_COLORS[i % ALLELE_COLORS.length]; }
 
-  // Raggio del simbolo in pixel, adattato al numero di individui.
+  // Raggio del simbolo in pixel, adattato al numero di individui e alla scala
+  // dell'interfaccia (schermi grandi / proiettore).
   _radiusFor(n) {
-    if (n > 700) return 4;
-    if (n > 300) return 5;
-    if (n > 120) return 7;
-    return 9;
+    const s = this.scale || 1;
+    if (n > 700) return 4 * s;
+    if (n > 300) return 5 * s;
+    if (n > 120) return 7 * s;
+    return 9 * s;
   }
 
   // Mappa id -> indice per uno snapshot, calcolata una sola volta e messa in

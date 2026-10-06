@@ -117,10 +117,14 @@ individuo ne vedi l'F personale, i genitori e i figli.
    media, numero di **alleli iniziali** e le loro **frequenze**, il seme casuale,
    e regola le forze. Premi **«Avvia simulazione»**.
 2. **Calcolo.** Tutti gli anni vengono simulati in blocco (barra di avanzamento).
-3. **Esplorazione.** Compaiono la sandbox e i grafici. La **barra del tempo**
-   (stile lettore video: play/pausa, anche con la barra spaziatrice) permette di
-   scorrere qualsiasi anno; durante il "play" l'animazione è fluida. In alto a
-   destra puoi modificare i parametri e premere **«Riavvia»**.
+3. **Esplorazione.** Su schermo largo la simulazione sta in **una sola
+   schermata 16:9**, pensata per il proiettore (il testo cresce con lo
+   schermo): a sinistra la sandbox, la **barra del tempo** e il grafico delle
+   frequenze alleliche; a destra l'esito di **Hardy-Weinberg** (✓ Sì / ✗ No),
+   le forze e i parametri, con **«Riavvia»** in fondo. La barra del tempo (stile
+   lettore video: play/pausa, anche con la barra spaziatrice) permette di
+   scorrere qualsiasi anno; durante il "play" l'animazione è fluida. Scorrendo
+   la pagina trovi gli altri grafici e il dettaglio di Hardy-Weinberg.
 4. **Grafici.** *Frequenze alleliche nel tempo* (una linea per allele),
    *Frequenze genotipiche nel tempo* e *Numero di individui nel tempo*. Nel
    grafico dei genotipi ogni genotipo ha due linee: **spessa** = frequenza

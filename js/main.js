@@ -35,7 +35,7 @@ sandbox.world = { width: WORLD.width, height: WORLD.height };
 const chart = new FrequencyChart(chartCanvas);
 const popChart = new PopChart(popChartCanvas);
 const genoChart = new GenotypeChart(genoChartCanvas, $('genoLegend'));
-const hwPanel = new HWPanel($('hwPanel'));
+const hwPanel = new HWPanel($('hwPanel'), $('hwSumVerdict'));
 const infoPanel = new InfoPanel($('infoPanel'));
 
 // --- Stato dell'applicazione ----------------------------------------------

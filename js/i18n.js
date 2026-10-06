@@ -55,6 +55,9 @@ const DICT = {
     'chart.expected': 'attese (HW)',
     'hw.title': 'Equilibrio di Hardy-Weinberg',
     'hw.placeholder': 'Le statistiche di Hardy-Weinberg compariranno qui.',
+    'hw.sumYes': 'Sì',
+    'hw.sumNo': 'No',
+    'hw.details': 'dettagli ↓',
     'footer': 'PopSim - strumento didattico di genetica di popolazione. Sviluppato da Federico M. Giorgi.',
 
     'knob.mortality': 'Mortalità',
@@ -171,6 +174,9 @@ const DICT = {
     'chart.expected': 'expected (HW)',
     'hw.title': 'Hardy-Weinberg equilibrium',
     'hw.placeholder': 'Hardy-Weinberg statistics will appear here.',
+    'hw.sumYes': 'Yes',
+    'hw.sumNo': 'No',
+    'hw.details': 'details ↓',
     'footer': 'PopSim - an educational population genetics tool. Developed by Federico M. Giorgi.',
 
     'knob.mortality': 'Mortality',

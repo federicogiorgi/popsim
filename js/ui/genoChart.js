@@ -14,7 +14,7 @@
 // eterozigote ha una linea a due colori alternati (allele minore e maggiore).
 // La legenda e' in HTML sopra il grafico, cosi' va a capo da sola.
 
-import { ALLELE_COLORS, alleleLabel } from '../config.js';
+import { ALLELE_COLORS, alleleLabel, remPx } from '../config.js';
 import { t, getLang } from '../i18n.js';
 
 // Genotipi mai arrivati a questa frequenza (osservata o attesa) non vengono
@@ -27,7 +27,6 @@ export class GenotypeChart {
     this.legendEl = legendEl;
     this.ctx = canvas.getContext('2d');
     this.dpr = 1;
-    this.padding = { left: 40, right: 12, top: 12, bottom: 24 };
     this._cache = null;
     this._legendKey = '';
     this.resize();
@@ -40,6 +39,10 @@ export class GenotypeChart {
     this.canvas.height = Math.max(1, Math.round(rect.height * this.dpr));
     this.cssWidth = rect.width;
     this.cssHeight = rect.height;
+    // Caratteri e margini in proporzione al testo della pagina (rem). I rientri
+    // orizzontali combaciano con --plot-left / --plot-right in css/styles.css.
+    this.rem = remPx();
+    this.padding = { left: 2.6 * this.rem, right: 0.75 * this.rem, top: 0.75 * this.rem, bottom: 1.5 * this.rem };
   }
 
   _color(i) { return ALLELE_COLORS[i % ALLELE_COLORS.length]; }
@@ -114,7 +117,7 @@ export class GenotypeChart {
 
     ctx.fillStyle = textColor;
     ctx.lineWidth = 1;
-    ctx.font = '11px system-ui, sans-serif';
+    ctx.font = Math.round(0.8 * this.rem) + 'px system-ui, sans-serif';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
     for (let k = 0; k <= 4; k++) {

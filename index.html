@@ -20,7 +20,7 @@
       if (localStorage.getItem('popsim-lang') === 'en') document.documentElement.lang = 'en';
     } catch (e) { /* storage non disponibile (es. navigazione privata): tema di sistema */ }
   </script>
-  <link rel="stylesheet" href="css/styles.css?v=13" />
+  <link rel="stylesheet" href="css/styles.css?v=14" />
 </head>
 <!-- La classe su <body> commuta tra le due schermate: setup e simulazione. -->
 <body class="view-setup">
@@ -85,13 +85,33 @@
         </div>
       </section>
 
+      <!-- GRAFICO delle frequenze alleliche nel tempo: subito sotto la barra del
+           tempo, cosi' cursore e asse x restano allineati. -->
+      <section class="panel chart-panel" aria-label="Andamento delle frequenze alleliche" data-i18n-attr="aria-label:chart.freq.aria">
+        <div class="chart-head">
+          <h2 data-i18n="chart.freq.title">Frequenze alleliche nel tempo</h2>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chart"></canvas>
+        </div>
+      </section>
+
     </div><!-- /.sim-left -->
 
     <!-- ===== COLONNA DESTRA (in simulazione) / SCHERMATA INIZIALE (in setup) =====
-         Setup: intro + parametri + «Avvia». Simulazione: «Riavvia» in alto, poi
-         forze e impostazioni. Il blocco delle frequenze iniziali vive qui in fase
-         di setup e viene spostato sotto (a piena larghezza) durante la simulazione
-         (vedi setView in main.js). L'ordine dei blocchi cambia via CSS 'order'. -->
+         Setup: intro + parametri + «Avvia». Simulazione: riepilogo di
+         Hardy-Weinberg (si'/no), poi forze, impostazioni, frequenze iniziali e
+         «Riavvia» in fondo. L'ordine dei blocchi cambia via CSS 'order'. -->
+    <div class="sim-right">
+
+    <!-- Riepilogo di Hardy-Weinberg (solo in simulazione): un semplice si'/no,
+         ben visibile; il dettaglio (verifiche, tabella) e' piu' in basso. -->
+    <section id="hwSummary" class="panel hw-summary" aria-live="polite">
+      <span class="hw-sum-title" data-i18n="hw.title">Equilibrio di Hardy-Weinberg</span>
+      <span id="hwSumVerdict" class="hw-sum-verdict">–</span>
+      <a class="hw-sum-more" href="#hwDetails" data-i18n="hw.details">dettagli ↓</a>
+    </section>
+
     <section id="setupScreen" class="panel setup-panel" aria-label="Parametri della simulazione" data-i18n-attr="aria-label:params.aria">
       <!-- Interruttori discreti in alto a destra nel riquadro, sia nella schermata
            iniziale sia in simulazione (accanto a «Riavvia»): lingua (bandierine
@@ -133,11 +153,6 @@
         </p>
       </div>
 
-      <div class="setup-actions">
-        <button id="startBtn" class="primary" data-i18n="btn.start">▶ Avvia simulazione</button>
-        <button id="restartBtn" class="primary" data-i18n="btn.restart">↻ Riavvia simulazione</button>
-      </div>
-
       <div class="setup-block block-forces">
         <h3 class="group-title" data-i18n="group.forces">Forze evolutive</h3>
         <div id="knobs" class="knobs"></div>
@@ -169,21 +184,19 @@
         <p class="hint" data-i18n="freqs.hint">La somma viene riportata a 1 all'avvio.</p>
         <div id="freqInputs" class="freq-grid setup-grid"></div>
       </div>
+
+      <!-- «Avvia» / «Riavvia»: sempre in fondo al pannello. -->
+      <div class="setup-actions">
+        <button id="startBtn" class="primary" data-i18n="btn.start">▶ Avvia simulazione</button>
+        <button id="restartBtn" class="primary" data-i18n="btn.restart">↻ Riavvia simulazione</button>
+      </div>
     </section>
 
-    <!-- ===== SOTTO A TUTTO (a piena larghezza): frequenze iniziali (spostate qui
-         in simulazione), i due grafici e Hardy-Weinberg. ===== -->
-    <div class="below-section">
+    </div><!-- /.sim-right -->
 
-      <!-- GRAFICO delle frequenze alleliche nel tempo. -->
-      <section class="panel chart-panel" aria-label="Andamento delle frequenze alleliche" data-i18n-attr="aria-label:chart.freq.aria">
-        <div class="chart-head">
-          <h2 data-i18n="chart.freq.title">Frequenze alleliche nel tempo</h2>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="chart"></canvas>
-        </div>
-      </section>
+    <!-- ===== SOTTO LA SCHERMATA PRINCIPALE (a piena larghezza, scorrendo): i
+         grafici dei genotipi e degli individui e il dettaglio di Hardy-Weinberg. ===== -->
+    <div class="below-section">
 
       <!-- GRAFICO delle frequenze genotipiche nel tempo: osservate (spesse) e
            attese sotto Hardy-Weinberg (sottili). Legenda in HTML sopra il canvas. -->
@@ -208,7 +221,7 @@
       </section>
 
       <!-- Scostamento da Hardy-Weinberg + frequenze genotipiche osservate. -->
-      <section class="panel hw-panel" aria-label="Equilibrio di Hardy-Weinberg" data-i18n-attr="aria-label:hw.title">
+      <section id="hwDetails" class="panel hw-panel" aria-label="Equilibrio di Hardy-Weinberg" data-i18n-attr="aria-label:hw.title">
         <h2 data-i18n="hw.title">Equilibrio di Hardy-Weinberg</h2>
         <div id="hwPanel">
           <p class="hint" data-i18n="hw.placeholder">Le statistiche di Hardy-Weinberg compariranno qui.</p>
@@ -236,26 +249,26 @@
   <script type="importmap">
   {
     "imports": {
-      "./js/config.js":           "./js/config.js?v=13",
-      "./js/i18n.js":             "./js/i18n.js?v=13",
-      "./js/recorder.js":         "./js/recorder.js?v=13",
-      "./js/model/genetics.js":   "./js/model/genetics.js?v=13",
-      "./js/model/individual.js": "./js/model/individual.js?v=13",
-      "./js/model/kinship.js":    "./js/model/kinship.js?v=13",
-      "./js/model/population.js": "./js/model/population.js?v=13",
-      "./js/model/rng.js":        "./js/model/rng.js?v=13",
-      "./js/render/sandbox.js":   "./js/render/sandbox.js?v=13",
-      "./js/ui/chart.js":         "./js/ui/chart.js?v=13",
-      "./js/ui/controls.js":      "./js/ui/controls.js?v=13",
-      "./js/ui/genoChart.js":     "./js/ui/genoChart.js?v=13",
-      "./js/ui/hwPanel.js":       "./js/ui/hwPanel.js?v=13",
-      "./js/ui/infoPanel.js":     "./js/ui/infoPanel.js?v=13",
-      "./js/ui/popChart.js":      "./js/ui/popChart.js?v=13",
-      "./js/ui/theme.js":         "./js/ui/theme.js?v=13",
-      "./js/ui/timeline.js":      "./js/ui/timeline.js?v=13"
+      "./js/config.js":           "./js/config.js?v=14",
+      "./js/i18n.js":             "./js/i18n.js?v=14",
+      "./js/recorder.js":         "./js/recorder.js?v=14",
+      "./js/model/genetics.js":   "./js/model/genetics.js?v=14",
+      "./js/model/individual.js": "./js/model/individual.js?v=14",
+      "./js/model/kinship.js":    "./js/model/kinship.js?v=14",
+      "./js/model/population.js": "./js/model/population.js?v=14",
+      "./js/model/rng.js":        "./js/model/rng.js?v=14",
+      "./js/render/sandbox.js":   "./js/render/sandbox.js?v=14",
+      "./js/ui/chart.js":         "./js/ui/chart.js?v=14",
+      "./js/ui/controls.js":      "./js/ui/controls.js?v=14",
+      "./js/ui/genoChart.js":     "./js/ui/genoChart.js?v=14",
+      "./js/ui/hwPanel.js":       "./js/ui/hwPanel.js?v=14",
+      "./js/ui/infoPanel.js":     "./js/ui/infoPanel.js?v=14",
+      "./js/ui/popChart.js":      "./js/ui/popChart.js?v=14",
+      "./js/ui/theme.js":         "./js/ui/theme.js?v=14",
+      "./js/ui/timeline.js":      "./js/ui/timeline.js?v=14"
     }
   }
   </script>
-  <script type="module" src="js/main.js?v=13"></script>
+  <script type="module" src="js/main.js?v=14"></script>
 </body>
 </html>

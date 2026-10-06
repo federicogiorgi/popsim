@@ -5,13 +5,13 @@
 // l'anno corrente, allineata con gli altri elementi temporali.
 
 import { t } from '../i18n.js';
+import { remPx } from '../config.js';
 
 export class PopChart {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.dpr = 1;
-    this.padding = { left: 48, right: 12, top: 12, bottom: 24 };
     this.resize();
   }
 
@@ -22,6 +22,10 @@ export class PopChart {
     this.canvas.height = Math.max(1, Math.round(rect.height * this.dpr));
     this.cssWidth = rect.width;
     this.cssHeight = rect.height;
+    // Caratteri e margini in proporzione al testo della pagina (rem). I rientri
+    // orizzontali combaciano con --plot-left / --plot-right in css/styles.css.
+    this.rem = remPx();
+    this.padding = { left: 3 * this.rem, right: 0.75 * this.rem, top: 0.75 * this.rem, bottom: 1.5 * this.rem };
   }
 
   // Arrotonda un massimo a un valore "tondo" per l'asse y.
@@ -62,7 +66,7 @@ export class PopChart {
     ctx.strokeStyle = axisColor;
     ctx.fillStyle = textColor;
     ctx.lineWidth = 1;
-    ctx.font = '11px system-ui, sans-serif';
+    ctx.font = Math.round(0.8 * this.rem) + 'px system-ui, sans-serif';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
     for (let k = 0; k <= 4; k++) {

@@ -21,8 +21,11 @@ import { t } from '../i18n.js';
 const FORCES = ['drift', 'mutation', 'migration', 'selection', 'mating'];
 
 export class HWPanel {
-  constructor(container) {
+  // container : dove va il dettaglio (verifiche, frequenze, tabella dei genotipi)
+  // summaryEl : (facoltativo) dove va il solo esito, ✓ Sì / ✗ No, ben visibile
+  constructor(container, summaryEl = null) {
     this.el = container;
+    this.summaryEl = summaryEl;
   }
 
   // stats    : oggetto restituito da Population.stats()
@@ -71,6 +74,8 @@ export class HWPanel {
     } else {
       check2 = checkLine(null, title2, t('hw.c2.probably'), testTxt + ': ' + t('hw.c2.falsePos'));
     }
+
+    this._summary(!(changing || genoViolated));
 
     let cls = 'ok';
     let verdict = t('hw.inEq');
@@ -131,6 +136,14 @@ export class HWPanel {
 
   clear() {
     this.el.innerHTML = '<p class="hint">' + t('hw.placeholder') + '</p>';
+    this._summary(null);
+  }
+
+  // Esito sintetico: true = in equilibrio, false = no, null = ancora nessun dato.
+  _summary(inEq) {
+    if (!this.summaryEl) return;
+    this.summaryEl.className = 'hw-sum-verdict' + (inEq === true ? ' ok' : inEq === false ? ' bad' : '');
+    this.summaryEl.textContent = inEq === true ? '✓ ' + t('hw.sumYes') : inEq === false ? '✗ ' + t('hw.sumNo') : '–';
   }
 }
 

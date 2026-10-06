@@ -57,6 +57,7 @@ export class Controls {
       hint.className = 'knob-hint';
       hint.textContent = t('knob.' + def.name + '.hint');
 
+      wrap.title = hint.textContent; // descrizione anche al passaggio del mouse
       wrap.appendChild(label);
       wrap.appendChild(input);
       wrap.appendChild(hint);
@@ -73,6 +74,7 @@ export class Controls {
       const tx = this.knobTexts[def.name];
       tx.label.nodeValue = t('knob.' + def.name);
       tx.hint.textContent = t('knob.' + def.name + '.hint');
+      tx.hint.parentNode.title = tx.hint.textContent;
       this.knobInputs[def.name].setAttribute('aria-label', t('knob.' + def.name));
     }
     this.freqInputs.forEach((inp, i) => { inp.parentNode.firstChild.nodeValue = t('freq.label', alleleLabel(i)); });

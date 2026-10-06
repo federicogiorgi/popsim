@@ -19,8 +19,17 @@
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   /* Rientri dell'area di disegno del grafico (devono combaciare con le
      costanti "padding" in js/ui/chart.js) per allineare il cursore temporale. */
-  --plot-left: 40px;
-  --plot-right: 12px;
+  --plot-left: 2.6rem;
+  --plot-right: 0.75rem;
+}
+
+/* Testo grande e leggibile anche da lontano (proiettore in aula). Sugli schermi
+   ampi TUTTA l'interfaccia (testi, spaziature, grafici) scala con la finestra,
+   come una slide: la misura di riferimento e' il lato "limitante" di un 16:9
+   (1vw in larghezza, 1.778vh in altezza), cosi' la schermata della simulazione
+   sta sempre in un solo schermo. Esempio: 1920x1080 a schermo intero -> 21px. */
+@media (min-width: 900px) {
+  html { font-size: clamp(16px, calc(min(1vw, 1.778vh) * 1.1), 30px); }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -84,11 +93,11 @@ body {
 }
 
 .app-header {
-  padding: 14px 16px 6px;
+  padding: 0.9rem 1rem 0.4rem;
   text-align: center;
 }
 .app-header h1 { margin: 0; font-size: 1.5rem; letter-spacing: 0.5px; }
-.subtitle { margin: 2px 0 0; color: var(--muted); font-size: 0.9rem; }
+.subtitle { margin: 2px 0 0; color: var(--muted); font-size: 0.95rem; }
 
 /* Il titolo e' un link alla home: cliccandolo si ricarica e si azzerano i parametri. */
 .app-home {
@@ -104,43 +113,78 @@ body {
 /* Contenitore principale: una colonna, larghezza massima per non "sparpagliare"
    il contenuto sui monitor grandi. */
 .app {
-  max-width: 920px;
+  max-width: 58rem;
   margin: 0 auto;
-  padding: 10px 12px 32px;
+  padding: 0.6rem 0.75rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
-/* --- Layout DESKTOP a due colonne (in simulazione) -----------------------
-   Riga in alto: a sinistra la sandbox + la barra del tempo; a destra i parametri
-   (larghi circa 3/5 della colonna sinistra: 5fr contro 3fr). La sandbox si
-   allunga per pareggiare l'altezza della colonna dei parametri. Sotto, a piena
-   larghezza, i due grafici e Hardy-Weinberg. Sotto i 900px si torna a una
-   singola colonna (impilata). */
-.sim-left { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.below-section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+/* --- Layout DESKTOP 16:9 (in simulazione) --------------------------------
+   La schermata principale occupa esattamente l'altezza della finestra, senza
+   scorrere: a sinistra la sandbox, la barra del tempo e il grafico delle
+   frequenze alleliche; a destra il riepilogo di Hardy-Weinberg (si'/no) e i
+   parametri, con «Riavvia» in fondo. Scorrendo, sotto, a piena larghezza: gli
+   altri grafici e il dettaglio di Hardy-Weinberg. Sotto i 900px di larghezza
+   si torna a una singola colonna (impilata). */
+.sim-left, .sim-right, .below-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
 
 @media (min-width: 900px) {
-  body.view-sim .app {
-    max-width: 1400px;
-    display: grid;
-    grid-template-columns: 5fr 3fr;
-    grid-template-areas:
-      "left  params"
-      "below below";
-    align-items: stretch;
-    column-gap: 16px;
+  /* Intestazione compatta, su una riga, ad altezza fissa (serve al calcolo
+     dell'altezza della schermata principale). */
+  body.view-sim {
+    --header-h: 2.6rem;
+    --dash-h: calc(100vh - var(--header-h) - 1.1rem);
+    --dash-h: calc(100dvh - var(--header-h) - 1.1rem);
   }
-  body.view-sim .sim-left { grid-area: left; }
-  /* I parametri definiscono l'altezza della riga; si dimensionano al contenuto. */
-  body.view-sim #setupScreen { grid-area: params; align-self: start; }
-  body.view-sim .below-section { grid-area: below; }
+  body.view-sim .app-header {
+    height: var(--header-h);
+    padding: 0.35rem 1rem 0;
+    display: flex;
+    justify-content: center;
+  }
+  body.view-sim .app-home { display: inline-flex; align-items: baseline; gap: 0.8rem; }
+  body.view-sim .app-header h1 { font-size: 1.4rem; }
+  body.view-sim .subtitle { margin: 0; }
 
-  /* La sandbox riempie l'altezza disponibile, cosi' che sandbox + barra del
-     tempo pareggino l'altezza del pannello dei parametri. */
-  body.view-sim .sandbox-panel { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
-  body.view-sim .sandbox-wrap { flex: 1 1 auto; aspect-ratio: auto; min-height: 320px; }
+  body.view-sim .app {
+    max-width: none;
+    padding: 0.35rem 1rem 2rem;
+    display: grid;
+    grid-template-columns: minmax(0, 2.15fr) minmax(0, 1fr);
+    grid-template-rows: var(--dash-h) auto;
+    grid-template-areas:
+      "left  right"
+      "below below";
+    gap: 0.75rem 1rem;
+  }
+  body.view-sim .sim-left { grid-area: left; min-height: 0; }
+  body.view-sim .sim-right { grid-area: right; min-height: 0; }
+  body.view-sim .below-section { grid-area: below; margin-top: 0.75rem; }
+
+  /* La sandbox prende tutto lo spazio rimasto nella colonna sinistra. */
+  body.view-sim .sandbox-panel { flex: 1 1 0; display: flex; flex-direction: column; min-height: 0; }
+  body.view-sim .sandbox-wrap { flex: 1 1 auto; aspect-ratio: auto; min-height: 0; }
+  body.view-sim .sim-left .chart-wrap { aspect-ratio: auto; height: clamp(7rem, 24vh, 15rem); min-height: 0; }
+
+  /* I parametri riempiono la colonna destra; se non ci stanno (es. molti
+     alleli su uno schermo piccolo) scorrono al loro interno, e «Riavvia»
+     resta comunque visibile, ancorato in fondo. */
+  body.view-sim #setupScreen { flex: 1 1 0; min-height: 0; overflow-y: auto; padding-bottom: 0; }
+  body.view-sim .setup-actions {
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
+    padding: 0.75rem 0;
+    background: var(--panel);
+  }
+  body.view-sim .setup-actions button { width: 100%; }
 }
 
 .panel {
@@ -148,15 +192,15 @@ body {
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: var(--shadow);
-  padding: 12px;
+  padding: 0.75rem;
 }
 .panel h2 {
-  margin: 0 0 8px;
-  font-size: 1rem;
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
   font-weight: 600;
 }
 
-.hint { color: var(--muted); font-size: 0.88rem; margin: 4px 0; }
+.hint { color: var(--muted); font-size: 0.92rem; margin: 4px 0; }
 .muted { color: var(--muted); }
 
 /* --- Commutazione tra schermata di setup e simulazione -------------------- */
@@ -164,6 +208,7 @@ body {
    tutto, e il pannello dei parametri resta in fondo (ordine del DOM). */
 .view-setup .sim-left { display: none; }
 .view-setup .below-section { display: none; }
+.view-setup .hw-summary { display: none; }
 .view-setup #restartBtn { display: none; }
 .view-sim #startBtn { display: none; }
 .view-setup .setup-intro { display: block; }
@@ -180,15 +225,18 @@ body {
 .view-setup .block-forces   { order: 3; }
 .view-setup .setup-actions  { order: 4; }
 
-/* SIMULAZIONE (colonna destra): «Riavvia» in alto, poi forze, impostazioni,
-   frequenze. */
-.view-sim .setup-actions  { order: 0; }
+/* SIMULAZIONE (colonna destra): forze, impostazioni, frequenze e, in fondo,
+   «Riavvia». */
 .view-sim .block-forces   { order: 1; }
 .view-sim .block-settings { order: 2; }
 .view-sim .block-freqs    { order: 3; }
+.view-sim .setup-actions  { order: 4; }
+/* In simulazione il primo titolo sta in cima al riquadro, accanto agli
+   interruttori di lingua e tema. */
+.view-sim .block-forces .group-title { margin-top: 0; padding-right: 8.5rem; }
 
 /* --- Sandbox -------------------------------------------------------------- */
-.sandbox-panel { padding: 8px; }
+.sandbox-panel { padding: 0.5rem; }
 .sandbox-wrap {
   position: relative;
   width: 100%;
@@ -238,7 +286,7 @@ body {
 .info-overlay {
   position: absolute;
   top: 10px; right: 10px;
-  width: min(300px, calc(100% - 20px));
+  width: min(20rem, calc(100% - 20px));
   max-height: calc(100% - 20px);
   overflow: auto;
   background: var(--panel);
@@ -266,13 +314,13 @@ body {
 .legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin: 8px 2px 2px;
-  font-size: 0.82rem;
+  gap: 0.4rem 0.9rem;
+  margin: 0.45rem 2px 2px;
+  font-size: 0.9rem;
   color: var(--ink);
 }
 .lg { display: inline-flex; align-items: center; gap: 6px; }
-.lg-shape { width: 12px; height: 12px; background: var(--muted); display: inline-block; }
+.lg-shape { width: 0.8em; height: 0.8em; background: var(--muted); display: inline-block; }
 .lg-shape.circle { border-radius: 50%; }
 
 /* --- Barra temporale ------------------------------------------------------
@@ -280,17 +328,18 @@ body {
    sotto, occupa tutta la larghezza. Il cursore ha lo stesso rientro a sinistra
    dell'asse del grafico (--plot-left) e a destra (--plot-right), cosi' i due
    allineamenti temporali coincidono. */
-.transport { display: flex; flex-direction: column; gap: 8px; }
+.transport { display: flex; flex-direction: column; gap: 0.5rem; }
 .transport-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 .play-btn {
   flex: 0 0 auto;
-  min-width: 96px;
-  padding: 8px 12px;
+  min-width: 6.5rem;
+  padding: 0.45rem 0.8rem;
+  font-size: 1rem;
   border: 1px solid var(--accent);
   border-radius: 8px;
   background: var(--accent);
@@ -301,18 +350,18 @@ body {
 .time-label {
   flex: 1 1 auto;
   font-variant-numeric: tabular-nums;
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--muted);
 }
 .speed-ctrl {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
+  gap: 0.4rem;
+  font-size: 0.92rem;
   color: var(--muted);
 }
-.speed-ctrl input { width: 110px; }
+.speed-ctrl input { width: 8rem; }
 .transport-track {
   padding-left: var(--plot-left);
   padding-right: var(--plot-right);
@@ -335,15 +384,37 @@ body {
 /* In fondo, a piena larghezza, i grafici userebbero troppa altezza con
    l'aspect-ratio: fissiamo un'altezza contenuta. */
 @media (min-width: 900px) {
-  body.view-sim .below-section .chart-wrap { aspect-ratio: auto; height: 240px; }
+  body.view-sim .below-section .chart-wrap { aspect-ratio: auto; height: 15rem; }
 }
 #chart, #genoChart, #popChart { width: 100%; height: 100%; display: block; }
 /* Legenda HTML dei grafici (es. genotipi): a destra del titolo, va a capo. */
-.chart-legend { margin: 0; gap: 10px; }
+.chart-legend { margin: 0; gap: 0.4rem 0.7rem; }
 .lg-line { width: 18px; height: 0; border-top: 2px solid var(--ink); display: inline-block; }
 .lg-line.thin { border-top-width: 1px; opacity: 0.5; }
 
 /* --- Hardy-Weinberg ------------------------------------------------------- */
+/* Riepilogo in cima alla colonna destra: titolo, esito grande (✓ Sì / ✗ No)
+   e un collegamento al dettaglio piu' in basso. */
+.hw-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  flex-wrap: wrap;
+  flex: none;
+}
+.hw-sum-title { font-weight: 600; font-size: 1.1rem; }
+.hw-sum-verdict {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1.1;
+  padding: 0.1rem 0.8rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.hw-sum-verdict.ok { color: var(--ok); background: rgba(46,125,50,0.15); }
+.hw-sum-verdict.bad { color: var(--bad); background: rgba(198,40,40,0.15); }
+.hw-sum-more { margin-left: auto; font-size: 0.88rem; color: var(--muted); }
+.hw-sum-more:hover { color: var(--accent); }
 .hw-head { font-weight: 600; margin-bottom: 6px; }
 .hw-line { margin: 4px 0; font-variant-numeric: tabular-nums; }
 .hw-checks { list-style: none; margin: 6px 0 8px; padding: 0; font-variant-numeric: tabular-nums; }
@@ -352,29 +423,29 @@ body {
 .hw-check.ok .hw-check-icon { color: var(--ok); }
 .hw-check.warn .hw-check-icon { color: var(--warn); }
 .hw-check.bad .hw-check-icon { color: var(--bad); }
-.hw-formula { margin: 4px 0 8px; font-size: 0.9rem; }
+.hw-formula { margin: 4px 0 8px; font-size: 0.95rem; }
 .hw-formula code { background: rgba(127,127,127,0.12); padding: 1px 5px; border-radius: 4px; }
 .badge {
   display: inline-block;
   padding: 1px 8px;
   border-radius: 999px;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 600;
 }
 .badge.ok { background: rgba(46,125,50,0.15); color: var(--ok); }
 .badge.warn { background: rgba(178,106,0,0.15); color: var(--warn); }
 .badge.bad { background: rgba(198,40,40,0.15); color: var(--bad); }
 
-table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
 .hw-table th, .hw-table td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); }
 .hw-table th { color: var(--muted); font-weight: 600; }
-.hw-stats { margin: 8px 0 0; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+.hw-stats { margin: 8px 0 0; font-variant-numeric: tabular-nums; font-size: 0.95rem; }
 
 /* --- Manopole (forze) ----------------------------------------------------- */
 .knobs {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 0.75rem 1rem;
 }
 @media (min-width: 560px) {
   .knobs { grid-template-columns: 1fr 1fr; }
@@ -384,26 +455,31 @@ table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  gap: 0.4rem;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 .knob-value { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 700; }
 .knob input[type="range"] { width: 100%; }
-.knob-hint { margin: 0; font-size: 0.78rem; color: var(--muted); }
+.knob-hint { margin: 0; font-size: 0.85rem; color: var(--muted); line-height: 1.3; }
+/* In simulazione le descrizioni delle manopole (gia' lette nella schermata
+   iniziale) lasciano spazio al resto: restano come suggerimento al passaggio
+   del mouse (attributo title, vedi js/ui/controls.js). */
+.view-sim .knob-hint { display: none; }
 
 /* --- Setup ---------------------------------------------------------------- */
-.setup-intro h2 { margin: 0 0 4px; font-size: 1.15rem; }
+.setup-intro h2 { margin: 0 0 4px; font-size: 1.25rem; }
 /* Interruttori discreti (lingua: bandierine · levetta; tema: sole · levetta ·
    luna), in alto a destra nel riquadro dei parametri. Allineati al titolo
    nella schermata iniziale e al pulsante «Riavvia» in simulazione. */
 .setup-panel { position: relative; }
 .panel-switches {
   position: absolute;
-  right: 12px;
-  top: 14px;
+  right: 0.75rem;
+  top: 0.85rem;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.6rem;
 }
 .theme-toggle {
   display: inline-flex;
@@ -418,8 +494,8 @@ table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
   cursor: pointer;
   opacity: 0.75;
 }
-.view-sim .panel-switches { top: 28px; }
-.view-setup .setup-intro h2 { padding-right: 180px; }
+.view-sim .panel-switches { top: 0.55rem; }
+.view-setup .setup-intro h2 { padding-right: 11rem; }
 .theme-toggle:hover { opacity: 1; color: var(--ink); }
 .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
 .theme-track {
@@ -449,8 +525,8 @@ table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
 .lang-toggle[aria-checked="false"] .flag-it,
 .lang-toggle[aria-checked="true"] .flag-en { opacity: 1; }
 .group-title {
-  margin: 16px 0 8px;
-  font-size: 0.9rem;
+  margin: 1rem 0 0.5rem;
+  font-size: 0.92rem;
   font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
@@ -461,31 +537,32 @@ table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
 .setup-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 0.6rem;
 }
 @media (min-width: 560px) {
-  .setup-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+  .setup-grid { grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); }
 }
 .setup-grid label {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 0.82rem;
+  gap: 0.2rem;
+  font-size: 0.9rem;
   color: var(--muted);
 }
 .setup-grid input {
-  padding: 6px 8px;
+  padding: 0.3rem 0.5rem;
   border-radius: 6px;
   border: 1px solid var(--border);
   background: var(--panel);
   color: var(--ink);
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 .setup-grid input:disabled { opacity: 0.55; }
 .freq-grid { margin-top: 4px; }
-.setup-actions { margin-top: 10px; display: flex; gap: 8px; }
+.setup-actions { margin-top: 0.75rem; display: flex; gap: 0.5rem; }
 button.primary, button.secondary {
-  padding: 8px 16px;
+  padding: 0.5rem 1rem;
+  font-size: 1.05rem;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
@@ -498,7 +575,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 /* --- Pannello informazioni ------------------------------------------------ */
 .info-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .info-shape { font-size: 1.1rem; }
-.info-table td { padding: 3px 8px 3px 0; vertical-align: top; font-size: 0.9rem; }
+.info-table td { padding: 3px 8px 3px 0; vertical-align: top; font-size: 0.95rem; }
 .info-table td:first-child { color: var(--muted); white-space: nowrap; }
 .allele-pill {
   display: inline-block;
@@ -516,6 +593,6 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .app-footer {
   text-align: center;
   color: var(--muted);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   padding: 8px 16px 24px;
 }
