@@ -71,7 +71,7 @@ const DICT = {
     'knob.selection': 'Selezione',
     'knob.selection.hint': 'Vantaggio direzionale a favore dell’allele A1.',
     'knob.mating': 'Accoppiamento non casuale',
-    'knob.mating.hint': 'Accoppiamento tra simili: eccesso di omozigoti (F genotipico > 0), senza cambiare le frequenze alleliche.',
+    'knob.mating.hint': 'Accoppiamento tra simili: gli eterozigoti calano gradualmente fino a (1 − valore) del livello iniziale, tanto più in fretta quanto più il valore è alto (0.5: metà in ~50 generazioni). Le frequenze alleliche non cambiano.',
 
     'time.play': '▶ Play',
     'time.pause': '⏸ Pausa',
@@ -190,7 +190,7 @@ const DICT = {
     'knob.selection': 'Selection',
     'knob.selection.hint': 'Directional advantage for allele A1.',
     'knob.mating': 'Non-random mating',
-    'knob.mating.hint': 'Like mates with like: excess of homozygotes (genotypic F > 0), without changing the allele frequencies.',
+    'knob.mating.hint': 'Like mates with like: heterozygotes decline gradually to (1 − value) of their starting level, faster the higher the value (0.5: half in ~50 generations). Allele frequencies do not change.',
 
     'time.play': '▶ Play',
     'time.pause': '⏸ Pause',

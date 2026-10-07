@@ -34,6 +34,9 @@ export class Population {
     this.meanLife = config.meanLife;  // vita media in anni (n)
     this.alleleCount = config.nAlleles; // alleli distinti esistenti (cresce con la mutazione, max 9)
     this.knobs = { ...config.knobs };
+    // Consanguineita' "genotipica" dovuta all'accoppiamento non casuale: parte
+    // da 0 e sale gradualmente verso il valore della manopola (vedi _childGenotype).
+    this.mateF = 0;
 
     this.year = 0;
     this.nextId = 1;
@@ -117,19 +120,34 @@ export class Population {
   }
 
   // Genera il genotipo di un nuovo nato, coerente con le frequenze correnti.
-  // L'accoppiamento non casuale (mating) alza la probabilita' di omozigosi.
+  // L'accoppiamento non casuale alza la probabilita' di omozigosi: con
+  // probabilita' mateF il secondo allele e' una copia del primo, quindi gli
+  // eterozigoti attesi sono 2pq * (1 - mateF), senza cambiare le frequenze.
   _childGenotype() {
     const a = this._sampleAllele();
-    const b = this.rng.bool(this.knobs.mating) ? a : this._sampleAllele();
+    const b = this.rng.bool(this.mateF) ? a : this._sampleAllele();
     return [a, b];
+  }
+
+  // Avvicina mateF al livello della manopola m, con un andamento esponenziale
+  // che copre il 95% della distanza in circa matingGenerations * (1 - m)
+  // generazioni (vedi SCALES in config.js). E' l'analogo didattico, rallentato,
+  // dell'autofecondazione parziale: anche li' un accoppiamento piu' stretto da'
+  // sia un eccesso di omozigoti maggiore sia un equilibrio raggiunto prima.
+  _updateMating() {
+    const m = this.knobs.mating;
+    const gens = Math.max(1, SCALES.matingGenerations * (1 - m));
+    const tau = (gens * this.meanLife) / 3; // costante di tempo, in anni
+    this.mateF += (m - this.mateF) * (1 - Math.exp(-1 / tau));
   }
 
   // Avanza la simulazione di UN ANNO.
   step() {
     this.year++;
 
-    // (1) Forze sulle frequenze alleliche.
+    // (1) Forze sulle frequenze alleliche; accoppiamento non casuale.
     this._applyForces();
+    this._updateMating();
     this.freqHistory.push(this.freq.slice());
 
     // (2) Invecchiamento.

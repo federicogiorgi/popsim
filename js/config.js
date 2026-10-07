@@ -59,6 +59,14 @@ export const SCALES = {
   selectionMax: 0.1,      // vantaggio massimo di frequenza per l'allele A1, per anno
   migrationMax: 0.1,      // frazione massima di nuovi nati che sono immigranti
   mutationNewAllele: 0.05, // probabilita' massima, per anno, di comparsa di un nuovo allele
+  // Accoppiamento non casuale di livello m: gli eterozigoti scendono
+  // GRADUALMENTE fino a (1 - m) del livello di Hardy-Weinberg, e ci arrivano in
+  // circa matingGenerations * (1 - m) generazioni (almeno una): piu' forte e'
+  // l'accoppiamento tra simili, piu' basso e' il livello finale e piu' in
+  // fretta lo si raggiunge. Es.: m = 0.5 -> meta' degli eterozigoti in ~50
+  // generazioni; m = 0.9 -> 10% in ~10 generazioni; m = 1 -> spariscono in una.
+  // Una generazione = la vita media (default 10 anni).
+  matingGenerations: 100,
 };
 
 // Ciclo vitale: variabilita' della durata della vita attorno alla vita media.
